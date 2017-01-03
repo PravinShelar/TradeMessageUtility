@@ -147,6 +147,20 @@ namespace TradeMessageGenerator
                         {
                             keyValuePairOfSecondFile = contentsTwo.Split(sohValue);
                         }
+                        //< thead >
+                        //       < tr class="text-center">
+                        //           <th>@firstFileName</th>
+                        //           <th>@secondFileName</th>
+                        //       </tr>
+                        //   </thead>
+                        //   <tbody>
+                        //       <tr>
+                        //           <td class='text-left'>col1</td>
+                        //           <td class='text-left'>col1</td>
+                        //           <td class='text-left'>col2</td>
+                        //       </tr>
+                        //   </tbody>
+
 
                         if (keyValuePairOfFirstFile != null && keyValuePairOfSecondFile != null)
                         {
@@ -157,6 +171,27 @@ namespace TradeMessageGenerator
                             var tradeValues = UtilityHelper.GetTradeCodeValues();
                             if (keyValuePairOfFirstFile.Length == keyValuePairOfSecondFile.Length)
                             {
+                                outputLines.Add("<html>");
+                                outputLines.Add("<head><style>table { border-collapse: collapse; width: 100%;}");
+                                outputLines.Add("th { text-align: left; background-color: #f9ea4b; color: #4b4b4b; } ");
+                                //th, td {    text-align: left;    padding: 8px;} 
+                                outputLines.Add("td { text-align: left; padding: 10px;} ");
+                                outputLines.Add("h3 {font-size: 20px; margin: 0; border-bottom: 1px solid #aaa; padding:15px 10px;}");
+                                outputLines.Add("div {padding:10px;");
+                                outputLines.Add("</style></head> ");
+                                outputLines.Add("<body>");
+                                outputLines.Add("<h3>Log Message Comparison Report</h3>");
+                                outputLines.Add("<div>");
+                                outputLines.Add("<table>");
+                                outputLines.Add("<thead>");
+                                outputLines.Add("<tr class='text-center'>");
+                                outputLines.Add("<th></th>");
+                                outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(file)));
+                                outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(filepath2)));
+                                outputLines.Add("</tr>");
+                                outputLines.Add("</thead>");
+                                outputLines.Add("<tbody>");
+
                                 for (int i = 1; i < keyValuePairOfSecondFile.Length; i++)
                                 {
                                     //Sequence of key value pairs in both files should be same.
@@ -191,7 +226,13 @@ namespace TradeMessageGenerator
                                                 }
 
                                                 //Console.WriteLine(string.Format("{0}. First File - [{1} : {2}], Second File - [{3} : {4}]", numberOfDifferences, fileOneValue, keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim(), fileTwoValue, keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim()));
-                                                outputLines.Add(string.Format("{0}. First File - [{1} : {2}], Second File - [{3} : {4}]", numberOfDifferences, fileOneValue, keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim(), fileTwoValue, keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim()));
+                                                //outputLines.Add(string.Format("{0}. First File - [{1} : {2}], Second File - [{3} : {4}]", numberOfDifferences, fileOneValue, keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim(), fileTwoValue, keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim()));
+
+                                                var col1 = string.Format("{0} : {1}", fileOneValue, keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim());
+                                                var col2 = string.Format("{0} : {1}", fileTwoValue, keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim());
+                                                outputLines.Add("<tr>");
+                                                outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, col1, col2));
+                                                outputLines.Add("</tr>");
                                             }
                                         }
                                     }
@@ -200,19 +241,37 @@ namespace TradeMessageGenerator
                                     //    Console.WriteLine(string.Format("Files are not in proper sequence: {0}, {1}", keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim(), keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim()));
                                     //}
                                 }
+                                outputLines.Add("</tbody>");
+                                outputLines.Add("</table>");
+                                outputLines.Add("</div>");
+                                outputLines.Add("</body>");
+                                outputLines.Add(string.Format("<p>Number of differences in both Files = <b>{0}</b></ p > ", numberOfDifferences));
+                                outputLines.Add("</html>");
                             }
                             //else
                             //{
                             //    Console.WriteLine("Need to check if this is valid scenario");
                             //}
 
-                            outputLines.Add("\n");
-                            outputLines.Add(string.Format("Number of differences in both Files = {0}", numberOfDifferences));
+                            //outputLines.Add("\n");
+                            //outputLines.Add(string.Format("Number of differences in both Files = {0}", numberOfDifferences));
 
                         }
                         //Write output file
                         string outputfileName = Path.GetFileName(file).Replace(serverName, "CompareResult_");
-                        File.WriteAllLines(Path.Combine(folder, outputfileName), outputLines.ToArray());
+
+                        string htmlFilePath = Path.Combine(folder, outputfileName.Replace(".txt", ".html"));
+                        using (FileStream fs = new FileStream(htmlFilePath, FileMode.Create))
+                        {
+                            using (StreamWriter w = new StreamWriter(fs, System.Text.Encoding.UTF8))
+                            {
+                                foreach (var item in outputLines.ToArray())
+                                {
+                                    w.WriteLine(item);
+                                }
+                            }
+                        }
+
                     }
 
                 }
@@ -257,7 +316,7 @@ namespace TradeMessageGenerator
             ds.Tables.Add(dataTable);
             string fullFileName = Path.Combine(AppSettings.DirectoryName, string.Format("{0}_SampleFile_{1}_{2}{3}{4}.xlsx", DataSetName, useCaseNumber, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Year));
             //Commented to work Locally
-            //ExcelFileGenerator.CreateExcel(ds, fullFileName, useCaseHeader);
+            ExcelFileGenerator.CreateExcel(ds, fullFileName, useCaseHeader);
         }
 
         private List<string> getColumnNames(string appSettingValue)

@@ -23,7 +23,7 @@ namespace TradeMessageGenerator
             //Invoked by a automation script
             if (args != null && args.Length > 0)
             {
-                if (args.Length==1 && args[0].ToLower() == "/generate")
+                if (args.Length == 1 && args[0].ToLower() == "/generate")
                 {
                     if (Directory.Exists(AppSettings.DirectoryName))
                     {
@@ -31,6 +31,12 @@ namespace TradeMessageGenerator
                         tMsg.GenerateCombination();
                         AttachConsole(-1);
                         Console.WriteLine("Successfully generated sample trade messages.");
+                        Console.WriteLine();
+                    }
+                    else
+                    {
+                        AttachConsole(-1);
+                        Console.WriteLine("Directory [Key - directoryName] specified in configuration file does not exist.");
                         Console.WriteLine();
                     }
 
@@ -44,6 +50,12 @@ namespace TradeMessageGenerator
                         tMsg.CompareLogMessages(directoryToMonitor);
                         AttachConsole(-1);
                         Console.WriteLine("Successfully compared all trade messages.");
+                        Console.WriteLine();
+                    }
+                    else
+                    {
+                        AttachConsole(-1);
+                        Console.WriteLine(string.Format("Directory - {0}  does not exist.", directoryToMonitor));
                         Console.WriteLine();
                     }
 
@@ -65,6 +77,12 @@ namespace TradeMessageGenerator
                 if (Directory.Exists(AppSettings.DirectoryToMonitor))
                 {
                     Application.Run(new CompareWindow());
+                }
+                else
+                {
+                    Program.AttachConsole(-1);
+                    Console.WriteLine("Directory [Key - directoryToMonitor] specified in configuration file does not exist.");
+                    Console.WriteLine();
                 }
             }
         }

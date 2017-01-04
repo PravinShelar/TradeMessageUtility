@@ -24,6 +24,7 @@ namespace TradeMessageGenerator
         private List<string> columnsBasedOnPeriod = null;
         private static readonly Random random = new Random();
         private int dealerNoteNumber = 0;
+        private bool generateNegativeData = false;
 
         #endregion
 
@@ -118,7 +119,17 @@ namespace TradeMessageGenerator
 
             #endregion
 
+            #region List 8--> DSWP 3M LIBOR with negative data
+            generateNegativeData = true;
+            useCaseHeader = "List 8--> DSWP 3M LIBOR with negative data";
+            isBrokenDatedTrade = false;
+            generatestubData = false;
+            generateRollsOnData = false;
+            isDefault = false;
+            FillDataTable(useCaseNumber, useCaseHeader, isDefault, isBrokenDatedTrade, indexTenor, generatestubData, generateRollsOnData);
+            useCaseNumber++;
 
+            #endregion
         }
 
         public void CompareLogMessages(string directoryToMonitor)
@@ -130,6 +141,12 @@ namespace TradeMessageGenerator
             foreach (var folder in folders)
             {
                 var files = Directory.GetFiles(folder, string.Format("{0}_*.txt", serverName));
+
+                if (files.Length == 0)
+                {
+                    File.WriteAllText(Path.Combine(folder, string.Format("Terminate_{0}.txt", Path.GetFileName(folder))), "Unable to compare files as one of the server log file is not available.");
+                }
+
                 foreach (var file in files)
                 {
                     string filepath = file;
@@ -273,6 +290,10 @@ namespace TradeMessageGenerator
                             }
                         }
 
+                    }
+                    else
+                    {
+                        File.WriteAllText(Path.Combine(folder, string.Format("Terminate_{0}.txt", Path.GetFileName(folder))), "Unable to compare files as one of the server log file is not available.");
                     }
 
                 }
@@ -521,13 +542,20 @@ namespace TradeMessageGenerator
                     }
                     else
                     {
-                        var fixedPayCenters = new List<string> { "GBLO", "USNY" };
-                        int index = random.Next(0, fixedPayCenters.Count);
-                        if (index == fixedPayCenters.Count)
+                        if (generateNegativeData)
                         {
-                            index = index - 1;
+                            return "GBLO";
                         }
-                        return fixedPayCenters[index];
+                        else
+                        {
+                            var fixedPayCenters = new List<string> { "GBLO", "USNY" };
+                            int index = random.Next(0, fixedPayCenters.Count);
+                            if (index == fixedPayCenters.Count)
+                            {
+                                index = index - 1;
+                            }
+                            return fixedPayCenters[index];
+                        }
                     }
 
                 //return "GBLO,USNY";
@@ -547,7 +575,14 @@ namespace TradeMessageGenerator
                     }
                     else
                     {
-                        return "FOLLOW";
+                        if (generateNegativeData)
+                        {
+                            return "M";
+                        }
+                        else
+                        {
+                            return "FOLLOW";
+                        }
                     }
 
                 //  case "Term Date Convention": return "MODFOLLOW";// Value of this column same as Fixed Calc Date Convention
@@ -561,7 +596,14 @@ namespace TradeMessageGenerator
                     }
                     else
                     {
-                        return "FOLLOW";
+                        if (generateNegativeData)
+                        {
+                            return "M";
+                        }
+                        else
+                        {
+                            return "FOLLOW";
+                        }
                     };
                 //case "Float Pay Date Convention": return "";// Value of this column same as Float Calc Date Convention
                 //case "Reset Date Convention": return "";// Value of this column same as Float Calc Date Convention
@@ -597,7 +639,15 @@ namespace TradeMessageGenerator
                     }
                     else
                     {
-                        return "12M";
+                        if (generateNegativeData)
+                        {
+                            return "6";
+                        }
+                        else
+                        {
+                            return "12M";
+                        }
+
                     };
                 default: return string.Empty;
             }

@@ -69,13 +69,5 @@ namespace TradeMessageGenerator
             }
         }
 
-        //public static void GenerateTradeMessage(string[] argsList)
-        //{
-        //    var trademessages = new List<TradeMessage>();
-        //    trademessages.Add(new TradeMessage());
-
-        //    TradeMessage tMsg = new TradeMessage();
-        //    //tMsg.fullNotional = 0;
-        //}
     }
 }

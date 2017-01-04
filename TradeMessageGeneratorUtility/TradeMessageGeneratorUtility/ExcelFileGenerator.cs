@@ -7,9 +7,6 @@ namespace TradeMessageGenerator
     public static class ExcelFileGenerator
     {
 
-        //This method will create a excel file with the messages generated and store it in /TradeWeb folder
-        //with it's session ID.
-
         #region Public Static Methods
 
         public static bool CreateExcel(DataSet ds, string fullFileName, string useCaseHeader)

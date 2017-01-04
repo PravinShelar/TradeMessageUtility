@@ -22,9 +22,7 @@ namespace TradeMessageGenerator
 
         private List<string> columns = null;
         private List<string> columnsBasedOnPeriod = null;
-
         private static readonly Random random = new Random();
-
         private int dealerNoteNumber = 0;
 
         #endregion
@@ -605,25 +603,8 @@ namespace TradeMessageGenerator
             }
         }
 
-
-
         #endregion
 
-        #region Commented Code
-
-        //public decimal fullNotional { get; set; }
-        //public decimal rateSpread { get; set; }
-        //public int Period { get; set; }
-        //public DateTime effectiveDate { get; set; }
-        //public DateTime maturityDate { get; set; }
-        //private List<TradeMessage> tmessages;
-
-        //public void Validate(List<TradeMessage> tList)
-        //{
-        //    //This method will validate all 51 fields from the word file while generating the combinatoin
-        //}
-
-        #endregion
     }
 
 }

@@ -37,7 +37,7 @@ namespace TradeMessageGenerator
                     excelWorksheet = excelWorkbook.Sheets.Add();
                     excelWorksheet.Name = table.TableName;
 
-                    int rowStartingCell = 4;
+                    int rowStartingCell = 1;
 
                     for (int i = 1; i < table.Columns.Count + 1; i++)
                     {

@@ -35,12 +35,13 @@ namespace TradeMessageGenerator
                     }
 
                 }
-                else if (args.Length == 1 && args[0].ToLower() == "/compare")
+                else if (args.Length == 2 && args[0].ToLower() == "/compare")
                 {
-                    if (Directory.Exists(AppSettings.DirectoryToMonitor))
+                    string directoryToMonitor = args[1];
+                    if (Directory.Exists(directoryToMonitor))
                     {
                         TradeMessage tMsg = new TradeMessage();
-                        tMsg.CompareLogMessages();
+                        tMsg.CompareLogMessages(directoryToMonitor);
                         AttachConsole(-1);
                         Console.WriteLine("Successfully compared all trade messages.");
                         Console.WriteLine();
@@ -53,7 +54,7 @@ namespace TradeMessageGenerator
                     Console.WriteLine("Invalid Commandline Arguments.");
                     Console.WriteLine("Please use below parameters to process further,");
                     Console.WriteLine("1. /generate : To generate sample data");
-                    Console.WriteLine("2. /compare : To compare log messages");
+                    Console.WriteLine("2. /compare folderpath : To compare log messages");
                     Console.WriteLine();
                 }
 

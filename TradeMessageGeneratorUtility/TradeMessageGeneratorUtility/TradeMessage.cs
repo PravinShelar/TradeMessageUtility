@@ -24,6 +24,9 @@ namespace TradeMessageGenerator
         private List<string> columnsBasedOnPeriod = null;
 
         private static readonly Random random = new Random();
+
+        private int dealerNoteNumber = 0;
+
         #endregion
 
         #region Public Methods
@@ -38,6 +41,8 @@ namespace TradeMessageGenerator
 
             //Get name of the columns which needs to be fill at runtime
             columnsBasedOnPeriod = getColumnNames(AppSettings.RuntimeValuesForColumns);
+
+
 
             #region List 1 --> DSWP 3M LIBOR Benchmark trade with Effective date in the past and future
 
@@ -118,9 +123,9 @@ namespace TradeMessageGenerator
 
         }
 
-        public void CompareLogMessages()
+        public void CompareLogMessages(string directoryToMonitor)
         {
-            var folders = Directory.GetDirectories(AppSettings.DirectoryToMonitor);
+            var folders = Directory.GetDirectories(directoryToMonitor);
             string serverName = "stg01";
             string anotherServerName = "stg51";
 
@@ -147,24 +152,11 @@ namespace TradeMessageGenerator
                         {
                             keyValuePairOfSecondFile = contentsTwo.Split(sohValue);
                         }
-                        //< thead >
-                        //       < tr class="text-center">
-                        //           <th>@firstFileName</th>
-                        //           <th>@secondFileName</th>
-                        //       </tr>
-                        //   </thead>
-                        //   <tbody>
-                        //       <tr>
-                        //           <td class='text-left'>col1</td>
-                        //           <td class='text-left'>col1</td>
-                        //           <td class='text-left'>col2</td>
-                        //       </tr>
-                        //   </tbody>
 
-
+                        int numberOfDifferences = 0;
                         if (keyValuePairOfFirstFile != null && keyValuePairOfSecondFile != null)
                         {
-                            int numberOfDifferences = 0;
+
                             List<string> keysToIgnor = new List<string>(AppSettings.KeysToIngnor.Split(configValueSeparator));
 
                             // Number of key value pairs in both files should be same.
@@ -244,8 +236,10 @@ namespace TradeMessageGenerator
                                 outputLines.Add("</tbody>");
                                 outputLines.Add("</table>");
                                 outputLines.Add("</div>");
+                                outputLines.Add("<hr>");
+                                outputLines.Add(string.Format("<p> Number of differences in both Files = <b>{0}</b></ p > ", numberOfDifferences));
+                                outputLines.Add("<hr>");
                                 outputLines.Add("</body>");
-                                outputLines.Add(string.Format("<p>Number of differences in both Files = <b>{0}</b></ p > ", numberOfDifferences));
                                 outputLines.Add("</html>");
                             }
                             //else
@@ -258,7 +252,16 @@ namespace TradeMessageGenerator
 
                         }
                         //Write output file
-                        string outputfileName = Path.GetFileName(file).Replace(serverName, "CompareResult_");
+                        string outputfileName = string.Empty;
+                        if (numberOfDifferences == 0)
+                        {
+                            outputfileName = Path.GetFileName(file).Replace(serverName, "Pass_");
+                        }
+                        else
+                        {
+                            outputfileName = Path.GetFileName(file).Replace(serverName, "Fail_");
+                        }
+
 
                         string htmlFilePath = Path.Combine(folder, outputfileName.Replace(".txt", ".html"));
                         using (FileStream fs = new FileStream(htmlFilePath, FileMode.Create))
@@ -406,7 +409,8 @@ namespace TradeMessageGenerator
                     {
                         dealerNotePostFix = "Rec";
                     };
-                    return string.Format("dswp{0} historic {1}Y_{2}", indexTenor, periodInYears, dealerNotePostFix);
+                    dealerNoteNumber++;
+                    return string.Format("dswp{0} historic {1}Y_{2}_{3}", indexTenor, periodInYears, dealerNotePostFix, dealerNoteNumber);
                 case "Fixed Stub Date":
                     if (!generateStubData)
                     {

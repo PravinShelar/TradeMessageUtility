@@ -165,7 +165,111 @@ namespace TradeMessageGenerator
                 }
                 else
                 {
-                    // Console.WriteLine("Need to check if this is valid scenario");
+
+                    Dictionary<int, string> finalFirstServerFileValues = new Dictionary<int, string>();
+                    for (int i = 1; i < keyValuePairOfFirstFile.Length - 1; i++)
+                    {
+                        int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim());
+                        string fileOneValue = keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim();
+                        if (!finalFirstServerFileValues.ContainsKey(fileOneKey))
+                        {
+                            finalFirstServerFileValues.Add(fileOneKey, fileOneValue);
+                        }
+                        else
+                        {
+                            string existingValue = finalFirstServerFileValues[fileOneKey];
+                            existingValue += string.Format(",{0}", fileOneValue);
+                            finalFirstServerFileValues[fileOneKey] = existingValue;
+                        }
+                    }
+
+                    Dictionary<int, string> finalSecondServerFileValues = new Dictionary<int, string>();
+                    for (int i = 1; i < keyValuePairOfSecondFile.Length - 1; i++)
+                    {
+                        int fileOneKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim());
+                        string fileOneValue = keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim();
+                        if (!finalSecondServerFileValues.ContainsKey(fileOneKey))
+                        {
+                            finalSecondServerFileValues.Add(fileOneKey, fileOneValue);
+                        }
+                        else
+                        {
+                            string existingValue = finalFirstServerFileValues[fileOneKey];
+                            existingValue += string.Format(",{0}", fileOneValue);
+                            finalSecondServerFileValues[fileOneKey] = existingValue;
+                        }
+                    }
+
+                    foreach (var item in finalFirstServerFileValues)
+                    {
+                        int keytoCheck = item.Key;
+
+                        if (!keysToIgnor.Contains(keytoCheck.ToString()))
+                        {
+                            string keyWithAttributeName = string.Empty;
+                            if (tradeValues.ContainsKey(keytoCheck))
+                            {
+                                keyWithAttributeName = string.Format("({0}) {1}", keytoCheck, tradeValues[keytoCheck]);
+                            }
+                            else
+                            {
+                                keyWithAttributeName = keytoCheck.ToString();
+                            }
+                            if (finalSecondServerFileValues.ContainsKey(keytoCheck))
+                            {
+                                if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
+                                {
+                                    ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Format("{0}: {1}", keyWithAttributeName, finalSecondServerFileValues[keytoCheck]) });
+                                    listView1.Items.Add(lstViewItem);
+                                    numberOfDifferences++;
+                                }
+                                finalSecondServerFileValues.Remove(keytoCheck);
+                            }
+                            else
+                            {
+                                ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Empty });
+                                listView1.Items.Add(lstViewItem);
+                                numberOfDifferences++;
+                            }
+                        }
+
+
+
+                        //if (!item.Value.Contains(","))
+                        //{
+                        //    //ListViewItem lstViewItem = new ListViewItem(new[] { item.Key.ToString(), item.Value });
+                        //    //listView1.Items.Add(lstViewItem);
+                        //}
+                        //else
+                        //{
+                        //    string[] values = item.Value.Split(',');
+                        //    foreach (var v in values)
+                        //    {
+                        //        ListViewItem lstViewItem = new ListViewItem(new[] { item.Key.ToString(), v });
+                        //        listView1.Items.Add(lstViewItem);
+                        //    }
+                        //}
+
+                    }
+                    foreach (var r in finalSecondServerFileValues)
+                    {
+                        if (!keysToIgnor.Contains(r.Key.ToString()))
+                        {
+                            string keyWithAttributeName = string.Empty;
+                            if (tradeValues.ContainsKey(r.Key))
+                            {
+                                keyWithAttributeName = string.Format("({0}) {1}", r.Key, tradeValues[r.Key]);
+                            }
+                            else
+                            {
+                                keyWithAttributeName = r.Key.ToString();
+                            }
+
+                            ListViewItem lstViewItem = new ListViewItem(new[] { string.Empty, string.Format("{0}: {1}", r.Key, finalSecondServerFileValues[r.Key]) });
+                            listView1.Items.Add(lstViewItem);
+                            numberOfDifferences++;
+                        }
+                    }
                 }
 
 

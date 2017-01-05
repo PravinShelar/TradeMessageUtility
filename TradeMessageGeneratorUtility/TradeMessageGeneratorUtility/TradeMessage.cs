@@ -257,10 +257,12 @@ namespace TradeMessageGenerator
                                 outputLines.Add("</body>");
                                 outputLines.Add("</html>");
                             }
-                            //else
-                            //{
-                            //    Console.WriteLine("Need to check if this is valid scenario");
-                            //}
+                            else
+                            {
+
+
+                                Console.WriteLine("Need to check if this is valid scenario");
+                            }
 
                             //outputLines.Add("\n");
                             //outputLines.Add(string.Format("Number of differences in both Files = {0}", numberOfDifferences));

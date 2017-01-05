@@ -217,12 +217,97 @@ namespace TradeMessageGenerator
                             }
                             if (finalSecondServerFileValues.ContainsKey(keytoCheck))
                             {
-                                if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
+                                string firstServerFileValue = finalFirstServerFileValues[keytoCheck];
+                                string secondServerFileValue = finalSecondServerFileValues[keytoCheck];
+
+                                var arrOne = firstServerFileValue.Split(',');
+                                var arrTwo = secondServerFileValue.Split(',');
+
+                                if (arrOne.Length > 1 || arrTwo.Length > 1)
                                 {
-                                    ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Format("{0}: {1}", keyWithAttributeName, finalSecondServerFileValues[keytoCheck]) });
-                                    listView1.Items.Add(lstViewItem);
-                                    numberOfDifferences++;
+                                    if (arrOne.Length == arrTwo.Length)
+                                    {
+                                        for (int i = 0; i < arrOne.Length; i++)
+                                        {
+                                            if (!string.Equals(arrOne[i], arrTwo[i]))
+                                            {
+                                                ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
+                                                listView1.Items.Add(lstViewItem);
+                                                numberOfDifferences++;
+                                            }
+                                        }
+                                    }
+                                    else if (arrOne.Length > arrTwo.Length)
+                                    {
+                                        for (int i = 0; i < arrOne.Length; i++)
+                                        {
+                                            if (i >= arrTwo.Length)
+                                            {
+                                                // Console.WriteLine(string.Format("{0}:{1}", arrOne[i], string.Empty));
+                                                ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Empty });
+                                                listView1.Items.Add(lstViewItem);
+                                                numberOfDifferences++;
+                                            }
+                                            else
+                                            {
+                                                //for (int j = 0; j < arrTwo.Length; j++)
+                                                //{
+                                                if (!string.Equals(arrOne[i], arrTwo[i]))
+                                                {
+                                                    // Console.WriteLine(string.Format("{0}:{1}", arrOne[i], arrTwo[i]));
+                                                    ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
+                                                    listView1.Items.Add(lstViewItem);
+                                                    numberOfDifferences++;
+                                                }
+                                                //}
+                                            }
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        for (int i = 0; i < arrTwo.Length; i++)
+                                        {
+                                            if (i >= arrOne.Length)
+                                            {
+                                                // Console.WriteLine(string.Format("{0}:{1}", string.Empty, arrTwo[i]));
+                                                ListViewItem lstViewItem = new ListViewItem(new[] { string.Empty, string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
+                                                listView1.Items.Add(lstViewItem);
+                                                numberOfDifferences++;
+                                            }
+                                            else
+                                            {
+                                                //for (int j = 0; j < arrOne.Length; j++)
+                                                //{
+                                                if (!string.Equals(arrOne[i], arrTwo[i]))
+                                                {
+                                                    // Console.WriteLine(string.Format("{0}:{1}", arrOne[i], arrTwo[i]));
+                                                    ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
+                                                    listView1.Items.Add(lstViewItem);
+                                                    numberOfDifferences++;
+                                                }
+                                                //}
+                                            }
+                                        }
+                                    }
+
                                 }
+                                else
+                                {
+                                    if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
+                                    {
+                                        ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Format("{0}: {1}", keyWithAttributeName, finalSecondServerFileValues[keytoCheck]) });
+                                        listView1.Items.Add(lstViewItem);
+                                        numberOfDifferences++;
+                                    }
+                                }
+
+                                //if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
+                                //{
+                                //    ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Format("{0}: {1}", keyWithAttributeName, finalSecondServerFileValues[keytoCheck]) });
+                                //    listView1.Items.Add(lstViewItem);
+                                //    numberOfDifferences++;
+                                //}
                                 finalSecondServerFileValues.Remove(keytoCheck);
                             }
                             else

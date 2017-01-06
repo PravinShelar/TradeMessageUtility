@@ -173,101 +173,204 @@ namespace TradeMessageGenerator
                         {
 
                             List<string> keysToIgnor = new List<string>(AppSettings.KeysToIngnor.Split(configValueSeparator));
-
-                            // Number of key value pairs in both files should be same.
                             var tradeValues = UtilityHelper.GetTradeCodeValues();
-                            if (keyValuePairOfFirstFile.Length == keyValuePairOfSecondFile.Length)
-                            {
-                                outputLines.Add("<html>");
-                                outputLines.Add("<head><style>table { border-collapse: collapse; width: 100%;}");
-                                outputLines.Add("th { text-align: left; background-color: #f9ea4b; color: #4b4b4b; } ");
-                                //th, td {    text-align: left;    padding: 8px;} 
-                                outputLines.Add("td { text-align: left; padding: 10px;} ");
-                                outputLines.Add("h3 {font-size: 20px; margin: 0; border-bottom: 1px solid #aaa; padding:15px 10px;}");
-                                outputLines.Add("div {padding:10px;");
-                                outputLines.Add("</style></head> ");
-                                outputLines.Add("<body>");
-                                outputLines.Add("<h3>Log Message Comparison Report</h3>");
-                                outputLines.Add("<div>");
-                                outputLines.Add("<table>");
-                                outputLines.Add("<thead>");
-                                outputLines.Add("<tr class='text-center'>");
-                                outputLines.Add("<th></th>");
-                                outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(file)));
-                                outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(filepath2)));
-                                outputLines.Add("</tr>");
-                                outputLines.Add("</thead>");
-                                outputLines.Add("<tbody>");
 
-                                for (int i = 1; i < keyValuePairOfSecondFile.Length; i++)
+                            outputLines.Add("<html>");
+                            outputLines.Add("<head><style>table { border-collapse: collapse; width: 100%;}");
+                            outputLines.Add("th { text-align: left; background-color: #f9ea4b; color: #4b4b4b; } ");
+                            //th, td {    text-align: left;    padding: 8px;} 
+                            outputLines.Add("td { text-align: left; padding: 10px;} ");
+                            outputLines.Add("h3 {font-size: 20px; margin: 0; border-bottom: 1px solid #aaa; padding:15px 10px;}");
+                            outputLines.Add("div {padding:10px;");
+                            outputLines.Add("</style></head> ");
+                            outputLines.Add("<body>");
+                            outputLines.Add("<h3>Log Message Comparison Report</h3>");
+                            outputLines.Add("<div>");
+                            outputLines.Add("<table>");
+                            outputLines.Add("<thead>");
+                            outputLines.Add("<tr class='text-center'>");
+                            outputLines.Add("<th></th>");
+                            outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(file)));
+                            outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(filepath2)));
+                            outputLines.Add("</tr>");
+                            outputLines.Add("</thead>");
+                            outputLines.Add("<tbody>");
+
+                            Dictionary<int, string> finalFirstServerFileValues = new Dictionary<int, string>();
+                            for (int i = 1; i < keyValuePairOfFirstFile.Length - 1; i++)
+                            {
+                                int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim());
+                                string fileOneValue = keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim();
+                                if (!finalFirstServerFileValues.ContainsKey(fileOneKey))
                                 {
-                                    //Sequence of key value pairs in both files should be same.
-                                    //Console.WriteLine(string.Format("{0} - {1}",keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim(), keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim()));
-                                    if (string.Equals(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim(), keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim()))
+                                    finalFirstServerFileValues.Add(fileOneKey, fileOneValue);
+                                }
+                                else
+                                {
+                                    string existingValue = finalFirstServerFileValues[fileOneKey];
+                                    existingValue += string.Format(",{0}", fileOneValue);
+                                    finalFirstServerFileValues[fileOneKey] = existingValue;
+                                }
+                            }
+
+                            Dictionary<int, string> finalSecondServerFileValues = new Dictionary<int, string>();
+                            for (int i = 1; i < keyValuePairOfSecondFile.Length - 1; i++)
+                            {
+                                int fileOneKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim());
+                                string fileOneValue = keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim();
+                                if (!finalSecondServerFileValues.ContainsKey(fileOneKey))
+                                {
+                                    finalSecondServerFileValues.Add(fileOneKey, fileOneValue);
+                                }
+                                else
+                                {
+                                    string existingValue = finalFirstServerFileValues[fileOneKey];
+                                    existingValue += string.Format(",{0}", fileOneValue);
+                                    finalSecondServerFileValues[fileOneKey] = existingValue;
+                                }
+                            }
+
+                            foreach (var item in finalFirstServerFileValues)
+                            {
+                                int keytoCheck = item.Key;
+
+                                if (!keysToIgnor.Contains(keytoCheck.ToString()))
+                                {
+                                    string keyWithAttributeName = string.Empty;
+                                    if (tradeValues.ContainsKey(keytoCheck))
                                     {
-                                        if (!keysToIgnor.Contains(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim()))
+                                        keyWithAttributeName = string.Format("({0}) {1}", keytoCheck, tradeValues[keytoCheck]);
+                                    }
+                                    else
+                                    {
+                                        keyWithAttributeName = keytoCheck.ToString();
+                                    }
+                                    if (finalSecondServerFileValues.ContainsKey(keytoCheck))
+                                    {
+                                        string firstServerFileValue = finalFirstServerFileValues[keytoCheck];
+                                        string secondServerFileValue = finalSecondServerFileValues[keytoCheck];
+
+                                        var arrOne = firstServerFileValue.Split(',');
+                                        var arrTwo = secondServerFileValue.Split(',');
+
+                                        if (arrOne.Length > 1 || arrTwo.Length > 1)
                                         {
-                                            if (!string.Equals(keyValuePairOfFirstFile[i], keyValuePairOfSecondFile[i]))
+                                            if (arrOne.Length == arrTwo.Length)
+                                            {
+                                                for (int i = 0; i < arrOne.Length; i++)
+                                                {
+                                                    if (!string.Equals(arrOne[i], arrTwo[i]))
+                                                    {
+                                                        numberOfDifferences++;
+                                                        outputLines.Add("<tr>");
+                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i])));
+                                                        outputLines.Add("</tr>");
+                                                    }
+                                                }
+                                            }
+                                            else if (arrOne.Length > arrTwo.Length)
+                                            {
+                                                for (int i = 0; i < arrOne.Length; i++)
+                                                {
+                                                    if (i >= arrTwo.Length)
+                                                    {
+                                                        numberOfDifferences++;
+                                                        outputLines.Add("<tr>");
+                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Empty));
+                                                        outputLines.Add("</tr>");
+                                                    }
+                                                    else
+                                                    {
+                                                        if (!string.Equals(arrOne[i], arrTwo[i]))
+                                                        {
+                                                            numberOfDifferences++;
+                                                            outputLines.Add("<tr>");
+                                                            outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i])));
+                                                            outputLines.Add("</tr>");
+                                                        }
+                                                    }
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                for (int i = 0; i < arrTwo.Length; i++)
+                                                {
+                                                    if (i >= arrOne.Length)
+                                                    {
+                                                        numberOfDifferences++;
+                                                        outputLines.Add("<tr>");
+                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Empty, string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i])));
+                                                        outputLines.Add("</tr>");
+                                                    }
+                                                    else
+                                                    {
+                                                        if (!string.Equals(arrOne[i], arrTwo[i]))
+                                                        {
+                                                            numberOfDifferences++;
+                                                            outputLines.Add("<tr>");
+                                                            outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i])));
+                                                            outputLines.Add("</tr>");
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
                                             {
                                                 numberOfDifferences++;
-                                                string fileOneValue = string.Empty;
-                                                int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim());
-                                                if (tradeValues.ContainsKey(fileOneKey))
-                                                {
-                                                    fileOneValue = string.Format("({0}) {1}", fileOneKey, tradeValues[fileOneKey]);
-                                                }
-                                                else
-                                                {
-                                                    fileOneValue = fileOneKey.ToString();
-                                                }
-
-                                                string fileTwoValue = string.Empty;
-                                                int fileTwoKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim());
-                                                if (tradeValues.ContainsKey(fileTwoKey))
-                                                {
-                                                    fileTwoValue = string.Format("({0}) {1}", fileTwoKey, tradeValues[fileTwoKey]);
-                                                }
-                                                else
-                                                {
-                                                    fileTwoValue = fileTwoKey.ToString();
-                                                }
-
-                                                //Console.WriteLine(string.Format("{0}. First File - [{1} : {2}], Second File - [{3} : {4}]", numberOfDifferences, fileOneValue, keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim(), fileTwoValue, keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim()));
-                                                //outputLines.Add(string.Format("{0}. First File - [{1} : {2}], Second File - [{3} : {4}]", numberOfDifferences, fileOneValue, keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim(), fileTwoValue, keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim()));
-
-                                                var col1 = string.Format("{0} : {1}", fileOneValue, keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim());
-                                                var col2 = string.Format("{0} : {1}", fileTwoValue, keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim());
                                                 outputLines.Add("<tr>");
-                                                outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, col1, col2));
+                                                outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Format("{0}: {1}", keyWithAttributeName, finalSecondServerFileValues[keytoCheck])));
                                                 outputLines.Add("</tr>");
                                             }
                                         }
+
+                                        finalSecondServerFileValues.Remove(keytoCheck);
                                     }
-                                    //else
-                                    //{
-                                    //    Console.WriteLine(string.Format("Files are not in proper sequence: {0}, {1}", keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim(), keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim()));
-                                    //}
+                                    else
+                                    {
+                                        numberOfDifferences++;
+                                        outputLines.Add("<tr>");
+                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Empty));
+                                        outputLines.Add("</tr>");
+                                    }
                                 }
-                                outputLines.Add("</tbody>");
-                                outputLines.Add("</table>");
-                                outputLines.Add("</div>");
-                                outputLines.Add("<hr>");
-                                outputLines.Add(string.Format("<p> Number of differences in both Files = <b>{0}</b></ p > ", numberOfDifferences));
-                                outputLines.Add("<hr>");
-                                outputLines.Add("</body>");
-                                outputLines.Add("</html>");
+
                             }
-                            else
+                            foreach (var r in finalSecondServerFileValues)
                             {
+                                if (!keysToIgnor.Contains(r.Key.ToString()))
+                                {
+                                    string keyWithAttributeName = string.Empty;
+                                    if (tradeValues.ContainsKey(r.Key))
+                                    {
+                                        keyWithAttributeName = string.Format("({0}) {1}", r.Key, tradeValues[r.Key]);
+                                    }
+                                    else
+                                    {
+                                        keyWithAttributeName = r.Key.ToString();
+                                    }
 
-
-                                Console.WriteLine("Need to check if this is valid scenario");
+                                    numberOfDifferences++;
+                                    outputLines.Add("<tr>");
+                                    outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Empty, string.Format("{0}: {1}", r.Key, finalSecondServerFileValues[r.Key])));
+                                    outputLines.Add("</tr>");
+                                }
                             }
-
-                            //outputLines.Add("\n");
-                            //outputLines.Add(string.Format("Number of differences in both Files = {0}", numberOfDifferences));
-
                         }
+
+                        outputLines.Add("</tbody>");
+                        outputLines.Add("</table>");
+                        outputLines.Add("</div>");
+                        outputLines.Add("<hr>");
+                        outputLines.Add(string.Format("<p> Number of differences in both Files = <b>{0}</b></ p > ", numberOfDifferences));
+                        outputLines.Add("<hr>");
+                        outputLines.Add("</body>");
+                        outputLines.Add("</html>");
+
                         //Write output file
                         string outputfileName = string.Empty;
                         if (numberOfDifferences == 0)
@@ -278,7 +381,6 @@ namespace TradeMessageGenerator
                         {
                             outputfileName = Path.GetFileName(file).Replace(serverName, "Fail_");
                         }
-
 
                         string htmlFilePath = Path.Combine(folder, outputfileName.Replace(".txt", ".html"));
                         using (FileStream fs = new FileStream(htmlFilePath, FileMode.Create))

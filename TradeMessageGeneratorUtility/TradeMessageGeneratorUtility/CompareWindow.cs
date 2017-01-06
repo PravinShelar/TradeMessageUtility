@@ -70,7 +70,6 @@ namespace TradeMessageGenerator
 
         private void btnCompare_Click(object sender, EventArgs e)
         {
-            // Todo : Add List View Control Dynamically
             lblFileOne.Visible = true;
             lblFileTwo.Visible = true;
             lblDiff.Visible = true;
@@ -111,182 +110,98 @@ namespace TradeMessageGenerator
                 int numberOfDifferences = 0;
                 List<string> keysToIgnor = new List<string>(AppSettings.KeysToIngnor.Split(configValueSeparator));
 
-                // Number of key value pairs in both files should be same.
                 var tradeValues = UtilityHelper.GetTradeCodeValues();
 
-                if (keyValuePairOfFirstFile.Length == keyValuePairOfSecondFile.Length)
+                Dictionary<int, string> finalFirstServerFileValues = new Dictionary<int, string>();
+                for (int i = 1; i < keyValuePairOfFirstFile.Length - 1; i++)
                 {
-                    for (int i = 1; i < keyValuePairOfFirstFile.Length; i++)
+                    int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim());
+                    string fileOneValue = keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim();
+                    if (!finalFirstServerFileValues.ContainsKey(fileOneKey))
                     {
-                        //Sequence of key value pairs in both files should be same.
-
-                        if (string.Equals(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim(), keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim()))
-                        {
-                            if (!keysToIgnor.Contains(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim()))
-                            {
-                                if (!string.Equals(keyValuePairOfFirstFile[i], keyValuePairOfSecondFile[i]))
-                                {
-                                    numberOfDifferences++;
-                                    string fileOneValue = string.Empty;
-                                    int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim());
-                                    if (tradeValues.ContainsKey(fileOneKey))
-                                    {
-                                        fileOneValue = string.Format("({0}) {1}", fileOneKey, tradeValues[fileOneKey]);
-                                    }
-                                    else
-                                    {
-                                        fileOneValue = fileOneKey.ToString();
-                                    }
-
-                                    string fileTwoValue = string.Empty;
-                                    int fileTwoKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim());
-                                    if (tradeValues.ContainsKey(fileTwoKey))
-                                    {
-                                        fileTwoValue = string.Format("({0}) {1}", fileTwoKey, tradeValues[fileTwoKey]);
-                                    }
-                                    else
-                                    {
-                                        fileTwoValue = fileTwoKey.ToString();
-                                    }
-
-                                    //string.Format("{0}. First File - [{1} : {2}], Second File - [{3} : {4}]", numberOfDifferences, fileOneValue, keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim(), fileTwoValue, keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim())
-                                    string firstValue = string.Format("{0} : {1}", fileOneValue, keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim());
-                                    string secondValue = string.Format("{0} : {1}", fileTwoValue, keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim());
-                                    ListViewItem lstViewItem = new ListViewItem(new[] { firstValue, secondValue });
-                                    listView1.Items.Add(lstViewItem);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //Console.WriteLine(string.Format("Files are not in proper sequence: {0}, {1}", keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim(), keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim()));
-                        }
+                        finalFirstServerFileValues.Add(fileOneKey, fileOneValue);
+                    }
+                    else
+                    {
+                        string existingValue = finalFirstServerFileValues[fileOneKey];
+                        existingValue += string.Format(",{0}", fileOneValue);
+                        finalFirstServerFileValues[fileOneKey] = existingValue;
                     }
                 }
-                else
+
+                Dictionary<int, string> finalSecondServerFileValues = new Dictionary<int, string>();
+                for (int i = 1; i < keyValuePairOfSecondFile.Length - 1; i++)
                 {
-
-                    Dictionary<int, string> finalFirstServerFileValues = new Dictionary<int, string>();
-                    for (int i = 1; i < keyValuePairOfFirstFile.Length - 1; i++)
+                    int fileOneKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim());
+                    string fileOneValue = keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim();
+                    if (!finalSecondServerFileValues.ContainsKey(fileOneKey))
                     {
-                        int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim());
-                        string fileOneValue = keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim();
-                        if (!finalFirstServerFileValues.ContainsKey(fileOneKey))
+                        finalSecondServerFileValues.Add(fileOneKey, fileOneValue);
+                    }
+                    else
+                    {
+                        string existingValue = finalFirstServerFileValues[fileOneKey];
+                        existingValue += string.Format(",{0}", fileOneValue);
+                        finalSecondServerFileValues[fileOneKey] = existingValue;
+                    }
+                }
+
+                foreach (var item in finalFirstServerFileValues)
+                {
+                    int keytoCheck = item.Key;
+
+                    if (!keysToIgnor.Contains(keytoCheck.ToString()))
+                    {
+                        string keyWithAttributeName = string.Empty;
+                        if (tradeValues.ContainsKey(keytoCheck))
                         {
-                            finalFirstServerFileValues.Add(fileOneKey, fileOneValue);
+                            keyWithAttributeName = string.Format("({0}) {1}", keytoCheck, tradeValues[keytoCheck]);
                         }
                         else
                         {
-                            string existingValue = finalFirstServerFileValues[fileOneKey];
-                            existingValue += string.Format(",{0}", fileOneValue);
-                            finalFirstServerFileValues[fileOneKey] = existingValue;
+                            keyWithAttributeName = keytoCheck.ToString();
                         }
-                    }
-
-                    Dictionary<int, string> finalSecondServerFileValues = new Dictionary<int, string>();
-                    for (int i = 1; i < keyValuePairOfSecondFile.Length - 1; i++)
-                    {
-                        int fileOneKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim());
-                        string fileOneValue = keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim();
-                        if (!finalSecondServerFileValues.ContainsKey(fileOneKey))
+                        if (finalSecondServerFileValues.ContainsKey(keytoCheck))
                         {
-                            finalSecondServerFileValues.Add(fileOneKey, fileOneValue);
-                        }
-                        else
-                        {
-                            string existingValue = finalFirstServerFileValues[fileOneKey];
-                            existingValue += string.Format(",{0}", fileOneValue);
-                            finalSecondServerFileValues[fileOneKey] = existingValue;
-                        }
-                    }
+                            string firstServerFileValue = finalFirstServerFileValues[keytoCheck];
+                            string secondServerFileValue = finalSecondServerFileValues[keytoCheck];
 
-                    foreach (var item in finalFirstServerFileValues)
-                    {
-                        int keytoCheck = item.Key;
+                            var arrOne = firstServerFileValue.Split(',');
+                            var arrTwo = secondServerFileValue.Split(',');
 
-                        if (!keysToIgnor.Contains(keytoCheck.ToString()))
-                        {
-                            string keyWithAttributeName = string.Empty;
-                            if (tradeValues.ContainsKey(keytoCheck))
+                            if (arrOne.Length > 1 || arrTwo.Length > 1)
                             {
-                                keyWithAttributeName = string.Format("({0}) {1}", keytoCheck, tradeValues[keytoCheck]);
-                            }
-                            else
-                            {
-                                keyWithAttributeName = keytoCheck.ToString();
-                            }
-                            if (finalSecondServerFileValues.ContainsKey(keytoCheck))
-                            {
-                                string firstServerFileValue = finalFirstServerFileValues[keytoCheck];
-                                string secondServerFileValue = finalSecondServerFileValues[keytoCheck];
-
-                                var arrOne = firstServerFileValue.Split(',');
-                                var arrTwo = secondServerFileValue.Split(',');
-
-                                if (arrOne.Length > 1 || arrTwo.Length > 1)
+                                if (arrOne.Length == arrTwo.Length)
                                 {
-                                    if (arrOne.Length == arrTwo.Length)
+                                    for (int i = 0; i < arrOne.Length; i++)
                                     {
-                                        for (int i = 0; i < arrOne.Length; i++)
+                                        if (!string.Equals(arrOne[i], arrTwo[i]))
                                         {
+                                            numberOfDifferences++;
+                                            ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
+                                            listView1.Items.Add(lstViewItem);
+                                            
+                                        }
+                                    }
+                                }
+                                else if (arrOne.Length > arrTwo.Length)
+                                {
+                                    for (int i = 0; i < arrOne.Length; i++)
+                                    {
+                                        if (i >= arrTwo.Length)
+                                        {
+                                            numberOfDifferences++;
+                                            ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Empty });
+                                            listView1.Items.Add(lstViewItem);
+                                        }
+                                        else
+                                        {
+
                                             if (!string.Equals(arrOne[i], arrTwo[i]))
                                             {
+                                                numberOfDifferences++;
                                                 ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
                                                 listView1.Items.Add(lstViewItem);
-                                                numberOfDifferences++;
-                                            }
-                                        }
-                                    }
-                                    else if (arrOne.Length > arrTwo.Length)
-                                    {
-                                        for (int i = 0; i < arrOne.Length; i++)
-                                        {
-                                            if (i >= arrTwo.Length)
-                                            {
-                                                // Console.WriteLine(string.Format("{0}:{1}", arrOne[i], string.Empty));
-                                                ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Empty });
-                                                listView1.Items.Add(lstViewItem);
-                                                numberOfDifferences++;
-                                            }
-                                            else
-                                            {
-                                                //for (int j = 0; j < arrTwo.Length; j++)
-                                                //{
-                                                if (!string.Equals(arrOne[i], arrTwo[i]))
-                                                {
-                                                    // Console.WriteLine(string.Format("{0}:{1}", arrOne[i], arrTwo[i]));
-                                                    ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
-                                                    listView1.Items.Add(lstViewItem);
-                                                    numberOfDifferences++;
-                                                }
-                                                //}
-                                            }
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        for (int i = 0; i < arrTwo.Length; i++)
-                                        {
-                                            if (i >= arrOne.Length)
-                                            {
-                                                // Console.WriteLine(string.Format("{0}:{1}", string.Empty, arrTwo[i]));
-                                                ListViewItem lstViewItem = new ListViewItem(new[] { string.Empty, string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
-                                                listView1.Items.Add(lstViewItem);
-                                                numberOfDifferences++;
-                                            }
-                                            else
-                                            {
-                                                //for (int j = 0; j < arrOne.Length; j++)
-                                                //{
-                                                if (!string.Equals(arrOne[i], arrTwo[i]))
-                                                {
-                                                    // Console.WriteLine(string.Format("{0}:{1}", arrOne[i], arrTwo[i]));
-                                                    ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
-                                                    listView1.Items.Add(lstViewItem);
-                                                    numberOfDifferences++;
-                                                }
-                                                //}
                                             }
                                         }
                                     }
@@ -294,66 +209,66 @@ namespace TradeMessageGenerator
                                 }
                                 else
                                 {
-                                    if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
+                                    for (int i = 0; i < arrTwo.Length; i++)
                                     {
-                                        ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Format("{0}: {1}", keyWithAttributeName, finalSecondServerFileValues[keytoCheck]) });
-                                        listView1.Items.Add(lstViewItem);
-                                        numberOfDifferences++;
+                                        if (i >= arrOne.Length)
+                                        {
+                                            numberOfDifferences++;
+                                            ListViewItem lstViewItem = new ListViewItem(new[] { string.Empty, string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
+                                            listView1.Items.Add(lstViewItem);
+                                        }
+                                        else
+                                        {
+
+                                            if (!string.Equals(arrOne[i], arrTwo[i]))
+                                            {
+                                                numberOfDifferences++;
+                                                ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
+                                                listView1.Items.Add(lstViewItem);
+                                            }
+                                        }
                                     }
                                 }
 
-                                //if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
-                                //{
-                                //    ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Format("{0}: {1}", keyWithAttributeName, finalSecondServerFileValues[keytoCheck]) });
-                                //    listView1.Items.Add(lstViewItem);
-                                //    numberOfDifferences++;
-                                //}
-                                finalSecondServerFileValues.Remove(keytoCheck);
                             }
                             else
                             {
-                                ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Empty });
-                                listView1.Items.Add(lstViewItem);
-                                numberOfDifferences++;
+                                if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
+                                {
+                                    numberOfDifferences++;
+                                    ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Format("{0}: {1}", keyWithAttributeName, finalSecondServerFileValues[keytoCheck]) });
+                                    listView1.Items.Add(lstViewItem);
+                                }
                             }
+
+                            finalSecondServerFileValues.Remove(keytoCheck);
                         }
-
-
-
-                        //if (!item.Value.Contains(","))
-                        //{
-                        //    //ListViewItem lstViewItem = new ListViewItem(new[] { item.Key.ToString(), item.Value });
-                        //    //listView1.Items.Add(lstViewItem);
-                        //}
-                        //else
-                        //{
-                        //    string[] values = item.Value.Split(',');
-                        //    foreach (var v in values)
-                        //    {
-                        //        ListViewItem lstViewItem = new ListViewItem(new[] { item.Key.ToString(), v });
-                        //        listView1.Items.Add(lstViewItem);
-                        //    }
-                        //}
-
-                    }
-                    foreach (var r in finalSecondServerFileValues)
-                    {
-                        if (!keysToIgnor.Contains(r.Key.ToString()))
+                        else
                         {
-                            string keyWithAttributeName = string.Empty;
-                            if (tradeValues.ContainsKey(r.Key))
-                            {
-                                keyWithAttributeName = string.Format("({0}) {1}", r.Key, tradeValues[r.Key]);
-                            }
-                            else
-                            {
-                                keyWithAttributeName = r.Key.ToString();
-                            }
-
-                            ListViewItem lstViewItem = new ListViewItem(new[] { string.Empty, string.Format("{0}: {1}", r.Key, finalSecondServerFileValues[r.Key]) });
-                            listView1.Items.Add(lstViewItem);
                             numberOfDifferences++;
+                            ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Empty });
+                            listView1.Items.Add(lstViewItem);
                         }
+                    }
+
+                }
+                foreach (var r in finalSecondServerFileValues)
+                {
+                    if (!keysToIgnor.Contains(r.Key.ToString()))
+                    {
+                        string keyWithAttributeName = string.Empty;
+                        if (tradeValues.ContainsKey(r.Key))
+                        {
+                            keyWithAttributeName = string.Format("({0}) {1}", r.Key, tradeValues[r.Key]);
+                        }
+                        else
+                        {
+                            keyWithAttributeName = r.Key.ToString();
+                        }
+
+                        ListViewItem lstViewItem = new ListViewItem(new[] { string.Empty, string.Format("{0}: {1}", r.Key, finalSecondServerFileValues[r.Key]) });
+                        listView1.Items.Add(lstViewItem);
+                        numberOfDifferences++;
                     }
                 }
 

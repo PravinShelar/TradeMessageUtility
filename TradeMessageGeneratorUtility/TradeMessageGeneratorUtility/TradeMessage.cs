@@ -131,6 +131,8 @@ namespace TradeMessageGenerator
             useCaseNumber++;
 
             #endregion
+
+            File.WriteAllText(Path.Combine(AppSettings.DirectoryName, string.Format("{0}.txt", Path.GetFileName(AppSettings.DirectoryName))), "Successfully generated sample trade messages.");
         }
 
         public void CompareLogMessages(string directoryToMonitor)
@@ -145,326 +147,29 @@ namespace TradeMessageGenerator
 
                 if (files.Length == 0)
                 {
-                    File.WriteAllText(Path.Combine(folder, string.Format("Terminate_{0}.txt", Path.GetFileName(folder))), "Unable to compare files as one of the server log file is not available.");
+                    LogMessageComparer.createTerminateHtmlFile(folder, string.Format("Terminate_{0}.html", Path.GetFileName(folder)));
                 }
 
                 foreach (var file in files)
                 {
-                    string filepath = file;
                     string filepath2 = Path.Combine(folder, Path.GetFileName(file).Replace(serverName, anotherServerName));
 
                     if (File.Exists(filepath2))
                     {
-                        List<string> outputLines = new List<string>();
-                        string[] keyValuePairOfFirstFile = null, keyValuePairOfSecondFile = null;
-                        var contentsOne = File.ReadAllText(filepath);
-                        if (!string.IsNullOrEmpty(contentsOne))
-                        {
-                            keyValuePairOfFirstFile = contentsOne.Split(sohValue);
-                        }
-
-                        var contentsTwo = File.ReadAllText(filepath2);
-                        if (!string.IsNullOrEmpty(contentsTwo))
-                        {
-                            keyValuePairOfSecondFile = contentsTwo.Split(sohValue);
-                        }
-
-                        int numberOfDifferences = 0;
-                        if (keyValuePairOfFirstFile != null && keyValuePairOfSecondFile != null)
-                        {
-
-                            List<string> keysToIgnor = new List<string>(AppSettings.KeysToIngnor.Split(configValueSeparator));
-                            var tradeValues = UtilityHelper.GetTradeCodeValues();
-
-                            outputLines.Add("<html>");
-                            outputLines.Add("<head><style>");
-                            // outputLines.Add("<head><style>body { font-family: 'Helvetica Neue', Helvetica, Arial, sans - serif;font-size: 14px;");
-                            outputLines.Add("table { border-collapse: collapse; width: 100%;text-align: center;}");
-                            outputLines.Add("th { text-align: left; background-color: #f9ea4b; color: #4b4b4b; } ");
-                            //th, td {    text-align: left;    padding: 8px;} 
-                            outputLines.Add("td { text-align: left; padding: 10px;} ");
-                            outputLines.Add("h3 {font-size: 20px; margin: 0; border-bottom: 1px solid #aaa; padding:15px 10px;}");
-                            outputLines.Add("div {padding:10px;");
-                            outputLines.Add("</style></head> ");
-                            outputLines.Add("<body>");
-                            outputLines.Add("<h3>Log Message Comparison Report</h3>");
-                            outputLines.Add("<div>");
-                            outputLines.Add("<table>");
-                            outputLines.Add("<thead>");
-                            outputLines.Add("<tr class='text-center'>");
-                            outputLines.Add("<th></th>");
-                            outputLines.Add("<th>Tagname</th>");
-                            outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(file)));
-                            outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(filepath2)));
-                            outputLines.Add("</tr>");
-                            outputLines.Add("</thead>");
-                            outputLines.Add("<tbody>");
-
-                            Dictionary<int, string> finalFirstServerFileValues = new Dictionary<int, string>();
-                            for (int i = 1; i < keyValuePairOfFirstFile.Length - 1; i++)
-                            {
-                                int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim());
-                                string fileOneValue = keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim();
-                                if (!finalFirstServerFileValues.ContainsKey(fileOneKey))
-                                {
-                                    finalFirstServerFileValues.Add(fileOneKey, fileOneValue);
-                                }
-                                else
-                                {
-                                    string existingValue = finalFirstServerFileValues[fileOneKey];
-                                    existingValue += string.Format(",{0}", fileOneValue);
-                                    finalFirstServerFileValues[fileOneKey] = existingValue;
-                                }
-                            }
-
-                            Dictionary<int, string> finalSecondServerFileValues = new Dictionary<int, string>();
-                            for (int i = 1; i < keyValuePairOfSecondFile.Length - 1; i++)
-                            {
-                                int fileOneKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim());
-                                string fileOneValue = keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim();
-                                if (!finalSecondServerFileValues.ContainsKey(fileOneKey))
-                                {
-                                    finalSecondServerFileValues.Add(fileOneKey, fileOneValue);
-                                }
-                                else
-                                {
-                                    string existingValue = finalFirstServerFileValues[fileOneKey];
-                                    existingValue += string.Format(",{0}", fileOneValue);
-                                    finalSecondServerFileValues[fileOneKey] = existingValue;
-                                }
-                            }
-
-                            foreach (var item in finalFirstServerFileValues)
-                            {
-                                int keytoCheck = item.Key;
-
-                                if (!keysToIgnor.Contains(keytoCheck.ToString()))
-                                {
-                                    string keyWithAttributeName = string.Empty;
-                                    if (tradeValues.ContainsKey(keytoCheck))
-                                    {
-                                        keyWithAttributeName = string.Format("({0}) {1}", keytoCheck, tradeValues[keytoCheck]);
-                                    }
-                                    else
-                                    {
-                                        keyWithAttributeName = keytoCheck.ToString();
-                                    }
-                                    if (finalSecondServerFileValues.ContainsKey(keytoCheck))
-                                    {
-                                        string firstServerFileValue = finalFirstServerFileValues[keytoCheck];
-                                        string secondServerFileValue = finalSecondServerFileValues[keytoCheck];
-
-                                        var arrOne = firstServerFileValue.Split(',');
-                                        var arrTwo = secondServerFileValue.Split(',');
-
-                                        if (arrOne.Length > 1 || arrTwo.Length > 1)
-                                        {
-                                            if (arrOne.Length == arrTwo.Length)
-                                            {
-                                                for (int i = 0; i < arrOne.Length; i++)
-                                                {
-                                                    if (!string.Equals(arrOne[i], arrTwo[i]))
-                                                    {
-                                                        numberOfDifferences++;
-                                                        if (numberOfDifferences % 2 == 0)
-                                                        {
-                                                            outputLines.Add("<tr bgcolor='#dddddd'>");
-                                                        }
-                                                        else
-                                                        {
-                                                            outputLines.Add("<tr>");
-                                                        }
-
-                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i]));
-                                                        outputLines.Add("</tr>");
-                                                    }
-                                                }
-                                            }
-                                            else if (arrOne.Length > arrTwo.Length)
-                                            {
-                                                for (int i = 0; i < arrOne.Length; i++)
-                                                {
-                                                    if (i >= arrTwo.Length)
-                                                    {
-                                                        numberOfDifferences++;
-                                                        if (numberOfDifferences % 2 == 0)
-                                                        {
-                                                            outputLines.Add("<tr bgcolor='#dddddd'>");
-                                                        }
-                                                        else
-                                                        {
-                                                            outputLines.Add("<tr>");
-                                                        }
-                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, arrOne[i], emptyColumnValue));
-                                                        outputLines.Add("</tr>");
-                                                    }
-                                                    else
-                                                    {
-                                                        if (!string.Equals(arrOne[i], arrTwo[i]))
-                                                        {
-                                                            numberOfDifferences++;
-                                                            if (numberOfDifferences % 2 == 0)
-                                                            {
-                                                                outputLines.Add("<tr bgcolor='#dddddd'>");
-                                                            }
-                                                            else
-                                                            {
-                                                                outputLines.Add("<tr>");
-                                                            }
-                                                            outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i]));
-                                                            outputLines.Add("</tr>");
-                                                        }
-                                                    }
-                                                }
-
-                                            }
-                                            else
-                                            {
-                                                for (int i = 0; i < arrTwo.Length; i++)
-                                                {
-                                                    if (i >= arrOne.Length)
-                                                    {
-                                                        numberOfDifferences++;
-                                                        if (numberOfDifferences % 2 == 0)
-                                                        {
-                                                            outputLines.Add("<tr bgcolor='#dddddd'>");
-                                                        }
-                                                        else
-                                                        {
-                                                            outputLines.Add("<tr>");
-                                                        }
-                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, emptyColumnValue, arrTwo[i]));
-                                                        outputLines.Add("</tr>");
-                                                    }
-                                                    else
-                                                    {
-                                                        if (!string.Equals(arrOne[i], arrTwo[i]))
-                                                        {
-                                                            numberOfDifferences++;
-                                                            if (numberOfDifferences % 2 == 0)
-                                                            {
-                                                                outputLines.Add("<tr bgcolor='#dddddd'>");
-                                                            }
-                                                            else
-                                                            {
-                                                                outputLines.Add("<tr>");
-                                                            }
-                                                            outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i]));
-                                                            outputLines.Add("</tr>");
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
-                                            {
-                                                numberOfDifferences++;
-                                                if (numberOfDifferences % 2 == 0)
-                                                {
-                                                    outputLines.Add("<tr bgcolor='#dddddd'>");
-                                                }
-                                                else
-                                                {
-                                                    outputLines.Add("<tr>");
-                                                };
-                                                outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]));
-                                                outputLines.Add("</tr>");
-                                            }
-                                        }
-
-                                        finalSecondServerFileValues.Remove(keytoCheck);
-                                    }
-                                    else
-                                    {
-                                        numberOfDifferences++;
-                                        if (numberOfDifferences % 2 == 0)
-                                        {
-                                            outputLines.Add("<tr bgcolor='#dddddd'>");
-                                        }
-                                        else
-                                        {
-                                            outputLines.Add("<tr>");
-                                        }
-                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], emptyColumnValue));
-                                        outputLines.Add("</tr>");
-                                    }
-                                }
-
-                            }
-                            foreach (var r in finalSecondServerFileValues)
-                            {
-                                if (!keysToIgnor.Contains(r.Key.ToString()))
-                                {
-                                    string keyWithAttributeName = string.Empty;
-                                    if (tradeValues.ContainsKey(r.Key))
-                                    {
-                                        keyWithAttributeName = string.Format("({0}) {1}", r.Key, tradeValues[r.Key]);
-                                    }
-                                    else
-                                    {
-                                        keyWithAttributeName = r.Key.ToString();
-                                    }
-
-                                    numberOfDifferences++;
-                                    if (numberOfDifferences % 2 == 0)
-                                    {
-                                        outputLines.Add("<tr bgcolor='#dddddd'>");
-                                    }
-                                    else
-                                    {
-                                        outputLines.Add("<tr>");
-                                    }
-                                    outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, emptyColumnValue, finalSecondServerFileValues[r.Key]));
-                                    outputLines.Add("</tr>");
-                                }
-                            }
-                        }
-
-                        outputLines.Add("</tbody>");
-                        outputLines.Add("</table>");
-                        outputLines.Add("</div>");
-                        outputLines.Add("<hr>");
-                        outputLines.Add(string.Format("<p> Number of differences in both Files = <b>{0}</b></ p > ", numberOfDifferences));
-                        outputLines.Add("<hr>");
-                        outputLines.Add("</body>");
-                        outputLines.Add("</html>");
-
-                        //Write output file
-                        string outputfileName = string.Empty;
-                        if (numberOfDifferences == 0)
-                        {
-                            outputfileName = Path.GetFileName(file).Replace(serverName, "Pass_");
-                        }
-                        else
-                        {
-                            outputfileName = Path.GetFileName(file).Replace(serverName, "Fail_");
-                        }
-
-                        string htmlFilePath = Path.Combine(folder, outputfileName.Replace(".txt", ".html"));
-                        using (FileStream fs = new FileStream(htmlFilePath, FileMode.Create))
-                        {
-                            using (StreamWriter w = new StreamWriter(fs, System.Text.Encoding.UTF8))
-                            {
-                                foreach (var item in outputLines.ToArray())
-                                {
-                                    w.WriteLine(item);
-                                }
-                            }
-                        }
+                       LogMessageComparer.CompareLogMessage(folder,file, filepath2);
 
                     }
                     else
                     {
-                        File.WriteAllText(Path.Combine(folder, string.Format("Terminate_{0}.txt", Path.GetFileName(folder))), "Unable to compare files as one of the server log file is not available.");
+                        LogMessageComparer.createTerminateHtmlFile(folder, string.Format("Terminate_{0}.html", Path.GetFileName(folder)));
                     }
 
                 }
             }
 
         }
+
+       
 
         #endregion
 

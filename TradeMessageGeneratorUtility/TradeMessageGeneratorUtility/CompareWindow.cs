@@ -180,7 +180,7 @@ namespace TradeMessageGenerator
                                             numberOfDifferences++;
                                             ListViewItem lstViewItem = new ListViewItem(new[] { string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i]) });
                                             listView1.Items.Add(lstViewItem);
-                                            
+
                                         }
                                     }
                                 }

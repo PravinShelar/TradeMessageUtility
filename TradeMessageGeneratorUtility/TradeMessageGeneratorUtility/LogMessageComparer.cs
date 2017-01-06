@@ -14,7 +14,7 @@ namespace TradeMessageGenerator
         public const Char configValueSeparator = ',';
         public const string emptyColumnValue = "-";
 
-        public static void CompareLogMessage(string folder, string logFileOne, string logFileTwo)
+        public static void CompareLogMessage(string logFileOne, string logFileTwo, string folder, string cssFolderPath)
         {
             string serverName = "stg01";
 
@@ -39,7 +39,7 @@ namespace TradeMessageGenerator
                 List<string> keysToIgnor = new List<string>(AppSettings.KeysToIngnor.Split(configValueSeparator));
                 var tradeValues = UtilityHelper.GetTradeCodeValues();
 
-                getHtmlPageHeader(ref outputLines);
+                getHtmlPageHeader(ref outputLines, cssFolderPath);
                 outputLines.Add("<h1>Log Message Comparison Report</h1>");
                 outputLines.Add("<div class='pad10A'>");
                 outputLines.Add("<div class='table-responsive'>");
@@ -120,11 +120,11 @@ namespace TradeMessageGenerator
                                     {
                                         if (!string.Equals(arrOne[i], arrTwo[i]))
                                         {
-                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], false);
+                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], false, cssFolderPath);
                                         }
                                         else
                                         {
-                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], true);
+                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], true, cssFolderPath);
                                         }
                                     }
                                 }
@@ -134,18 +134,18 @@ namespace TradeMessageGenerator
                                     {
                                         if (i >= arrTwo.Length)
                                         {
-                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], emptyColumnValue, false);
+                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], emptyColumnValue, false, cssFolderPath);
                                         }
                                         else
                                         {
                                             if (!string.Equals(arrOne[i], arrTwo[i]))
                                             {
 
-                                                createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], false);
+                                                createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], false, cssFolderPath);
                                             }
                                             else
                                             {
-                                                createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], true);
+                                                createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], true, cssFolderPath);
                                             }
                                         }
                                     }
@@ -157,17 +157,17 @@ namespace TradeMessageGenerator
                                     {
                                         if (i >= arrOne.Length)
                                         {
-                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, emptyColumnValue, arrTwo[i], false);
+                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, emptyColumnValue, arrTwo[i], false, cssFolderPath);
                                         }
                                         else
                                         {
                                             if (!string.Equals(arrOne[i], arrTwo[i]))
                                             {
-                                                createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], false);
+                                                createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], false, cssFolderPath);
                                             }
                                             else
                                             {
-                                                createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], true);
+                                                createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i], true, cssFolderPath);
                                             }
                                         }
                                     }
@@ -179,11 +179,11 @@ namespace TradeMessageGenerator
                                 if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
                                 {
 
-                                    createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck], false);
+                                    createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck], false, cssFolderPath);
                                 }
                                 else
                                 {
-                                    createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck], true);
+                                    createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck], true, cssFolderPath);
                                 }
                             }
 
@@ -192,7 +192,7 @@ namespace TradeMessageGenerator
                         else
                         {
 
-                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], emptyColumnValue, false);
+                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], emptyColumnValue, false, cssFolderPath);
                         }
                     }
 
@@ -211,7 +211,7 @@ namespace TradeMessageGenerator
                             keyWithAttributeName = r.Key.ToString();
                         }
 
-                        createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, emptyColumnValue, finalSecondServerFileValues[r.Key], false);
+                        createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, emptyColumnValue, finalSecondServerFileValues[r.Key], false, cssFolderPath);
                     }
                 }
             }
@@ -239,14 +239,15 @@ namespace TradeMessageGenerator
 
         }
 
-        public static void createTerminateHtmlFile(string folder, string outputfileName)
+        public static void createTerminateHtmlFile(string folder, string outputfileName, string cssFolderPath)
         {
             List<string> outputLines = new List<string>();
-            getHtmlPageHeader(ref outputLines);
+            getHtmlPageHeader(ref outputLines, cssFolderPath);
             outputLines.Add("<h1>Unable to compare files as one of the server log file is not available.</h1>");
             getHtmlPageFooter(ref outputLines);
             createHtmlFile(folder, outputLines, outputfileName);
         }
+
         private static void createHtmlFile(string folder, List<string> outputLines, string outputfileName)
         {
             string htmlFilePath = Path.Combine(folder, outputfileName.Replace(".txt", ".html"));
@@ -271,44 +272,44 @@ namespace TradeMessageGenerator
             outputLines.Add("</html>");
         }
 
-        private static void getHtmlPageHeader(ref List<string> outputLines)
+        private static void getHtmlPageHeader(ref List<string> outputLines, string cssFolderPath)
         {
             outputLines.Add("<html>");
             outputLines.Add("<head>");
             outputLines.Add("<meta charset='utf-8'>");
             outputLines.Add("<meta http-equiv='X-UA-Compatible' content='IE=edge'>");
             outputLines.Add("<meta name='viewport' content='width=device-width, initial-scale=1'>");
-            outputLines.Add(string.Format("<link href='{0}/css/bootstrap.css' rel='stylesheet'>", AppSettings.CssFolderPath));
-            outputLines.Add(string.Format("<link href='{0}/css/style.css' rel='stylesheet'>", AppSettings.CssFolderPath));
+            outputLines.Add(string.Format("<link href='{0}/css/bootstrap.css' rel='stylesheet'>", cssFolderPath));
+            outputLines.Add(string.Format("<link href='{0}/css/style.css' rel='stylesheet'>", cssFolderPath));
             outputLines.Add("</head>");
             outputLines.Add("<body>");
             outputLines.Add("<header class=''>");
             outputLines.Add("<div class='container'>");
             outputLines.Add("<div class='logo pull-left'>");
-            outputLines.Add(string.Format("<img src ='{0}/images/logo.png' alt='Synechron' title='Synechron'>", AppSettings.CssFolderPath));
+            outputLines.Add(string.Format("<img src ='{0}/images/logo.png' alt='Synechron' title='Synechron'>", cssFolderPath));
             outputLines.Add("</div>");
             outputLines.Add("</div>");
             outputLines.Add("</header>");
             outputLines.Add("<section>");
             outputLines.Add("<div class='container'>");
             outputLines.Add("<div class='detail-report'>");
-           
+
         }
 
-        private static void createTableRow(ref List<string> outputLines, ref int numberOfDifferences, string keyWithAttributeName, string fileOneValue, string fileTwoValue, bool status)
+        private static void createTableRow(ref List<string> outputLines, ref int numberOfDifferences, string keyWithAttributeName, string fileOneValue, string fileTwoValue, bool status, string cssFolderPath)
         {
             string imageColumn = string.Empty;
             if (status == true)
             {
-                imageColumn = string.Format("<td align='center'><img src='{0}/images/ico_pass.gif' alt='Pass'>", AppSettings.CssFolderPath);
+                imageColumn = string.Format("<td align='center'><img src='{0}/images/ico_pass.gif' alt='Pass'>", cssFolderPath);
 
             }
             else
             {
                 numberOfDifferences++;
-                imageColumn = string.Format("<td align='center'><img src='{0}/images/ico_fail.gif' alt='Fail'>", AppSettings.CssFolderPath);
+                imageColumn = string.Format("<td align='center'><img src='{0}/images/ico_fail.gif' alt='Fail'>", cssFolderPath);
             }
-            
+
             outputLines.Add("<tr>");
             //outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>{4}", numberOfDifferences, keyWithAttributeName, fileOneValue, fileTwoValue, imageColumn));
             outputLines.Add(string.Format("<td class='text-left'>{0}</td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>{3}", keyWithAttributeName, fileOneValue, fileTwoValue, imageColumn));

@@ -138,6 +138,10 @@ namespace TradeMessageGenerator
         public void CompareLogMessages(string directoryToMonitor)
         {
             var folders = Directory.GetDirectories(directoryToMonitor);
+
+            //TODO : Check if file does not exist
+            string cssFolderPath = Path.Combine(string.Format(@"{0}\{1}", Directory.GetParent(directoryToMonitor).FullName, "Reports"));
+
             string serverName = "stg01";
             string anotherServerName = "stg51";
 
@@ -147,7 +151,7 @@ namespace TradeMessageGenerator
 
                 if (files.Length == 0)
                 {
-                    LogMessageComparer.createTerminateHtmlFile(folder, string.Format("Terminate_{0}.html", Path.GetFileName(folder)));
+                    LogMessageComparer.createTerminateHtmlFile(folder, string.Format("Terminate_{0}.html", Path.GetFileName(folder)), cssFolderPath);
                 }
 
                 foreach (var file in files)
@@ -156,12 +160,12 @@ namespace TradeMessageGenerator
 
                     if (File.Exists(filepath2))
                     {
-                       LogMessageComparer.CompareLogMessage(folder,file, filepath2);
+                        LogMessageComparer.CompareLogMessage(file, filepath2, folder, cssFolderPath);
 
                     }
                     else
                     {
-                        LogMessageComparer.createTerminateHtmlFile(folder, string.Format("Terminate_{0}.html", Path.GetFileName(folder)));
+                        LogMessageComparer.createTerminateHtmlFile(folder, string.Format("Terminate_{0}.html", Path.GetFileName(folder)), cssFolderPath);
                     }
 
                 }
@@ -169,7 +173,7 @@ namespace TradeMessageGenerator
 
         }
 
-       
+
 
         #endregion
 
@@ -231,11 +235,11 @@ namespace TradeMessageGenerator
                 case "Effective Date":
                     if ((forloopIndex + 1) % 2 == 0)
                     {
-                        return DateTime.Today.AddMonths((forloopIndex + 1) * (-4)).Date.ToString(DateFormat);
+                        return DateTime.Today.AddDays((forloopIndex + 1) * (-4)).Date.ToString(DateFormat);
                     }
                     else
                     {
-                        return DateTime.Today.AddMonths((forloopIndex + 1) * (7)).Date.ToString(DateFormat);
+                        return DateTime.Today.AddDays((forloopIndex + 1) * (7)).Date.ToString(DateFormat);
                     }
 
                 case "Maturity Date":
@@ -243,11 +247,11 @@ namespace TradeMessageGenerator
                     {
                         if (!isBrokenDatedTrade)
                         {
-                            return (DateTime.Today.AddMonths((forloopIndex + 1) * (-4)).Date.AddYears(periodInYears)).ToString(DateFormat);
+                            return (DateTime.Today.AddDays((forloopIndex + 1) * (-4)).Date.AddYears(periodInYears)).ToString(DateFormat);
                         }
                         else
                         {
-                            return (DateTime.Today.AddMonths((forloopIndex + 1) * (-4)).Date.AddYears(periodInYears).Date.AddDays((forloopIndex + 1) * (-4))).ToString(DateFormat);
+                            return (DateTime.Today.AddDays((forloopIndex + 1) * (-4)).Date.AddYears(periodInYears).Date.AddDays((forloopIndex + 1) * (-4))).ToString(DateFormat);
                         }
 
                     }
@@ -255,11 +259,11 @@ namespace TradeMessageGenerator
                     {
                         if (!isBrokenDatedTrade)
                         {
-                            return (DateTime.Today.AddMonths((forloopIndex + 1) * (7)).Date.AddYears(periodInYears)).ToString(DateFormat);
+                            return (DateTime.Today.AddDays((forloopIndex + 1) * (7)).Date.AddYears(periodInYears)).ToString(DateFormat);
                         }
                         else
                         {
-                            return (DateTime.Today.AddMonths((forloopIndex + 1) * (7)).Date.AddYears(periodInYears).Date.AddDays((forloopIndex + 1) * (15))).ToString(DateFormat);
+                            return (DateTime.Today.AddDays((forloopIndex + 1) * (7)).Date.AddYears(periodInYears).Date.AddDays((forloopIndex + 1) * (15))).ToString(DateFormat);
                         }
                     }
                 case "Rate/Spread":
@@ -334,20 +338,33 @@ namespace TradeMessageGenerator
                     }
                     else
                     {
-                        if (forloopIndex % 2 == 0 && forloopIndex < 8)
+                        //if (forloopIndex % 2 == 0 && forloopIndex < 8)
+                        //{
+                        //    List<string> rollsOnData = new List<string>() { "EOM", "IMM" };
+                        //    int i = random.Next(0, rollsOnData.Count);
+                        //    if (i == rollsOnData.Count)
+                        //    {
+                        //        i = i - 1;
+                        //    }
+                        //    return rollsOnData[i];
+                        //}
+                        //else
+                        //{
+                        //    return random.Next(1, 30).ToString();
+                        //}
+
+                        DateTime date;
+                        if ((forloopIndex + 1) % 2 == 0)
                         {
-                            List<string> rollsOnData = new List<string>() { "EOM", "IMM" };
-                            int i = random.Next(0, rollsOnData.Count);
-                            if (i == rollsOnData.Count)
-                            {
-                                i = i - 1;
-                            }
-                            return rollsOnData[i];
+                            date = (DateTime.Today.AddDays((forloopIndex + 1) * (-4)).Date.AddYears(periodInYears));
                         }
                         else
                         {
-                            return random.Next(1, 30).ToString();
+                            date = (DateTime.Today.AddDays((forloopIndex + 1) * (7)).Date.AddYears(periodInYears));
                         }
+
+                        return date.Day != 31 ? date.Day.ToString() : "EOM";
+
                     }
                 default: return string.Empty;
             }
@@ -418,27 +435,23 @@ namespace TradeMessageGenerator
                         }
                         else
                         {
-                            var fixedPayCenters = new List<string> { "GBLO", "USNY" };
-                            int index = random.Next(0, fixedPayCenters.Count);
-                            if (index == fixedPayCenters.Count)
-                            {
-                                index = index - 1;
-                            }
-                            return fixedPayCenters[index];
+                            //var fixedPayCenters = new List<string> { "GBLO", "USNY" };
+                            //int index = random.Next(0, fixedPayCenters.Count);
+                            //if (index == fixedPayCenters.Count)
+                            //{
+                            //    index = index - 1;
+                            //}
+                            //return fixedPayCenters[index];
+                            return "USNY";
                         }
                     }
-
-                //return "GBLO,USNY";
-                //case "Term Center": return "GBLO,USNY";// Value of this column same as Fixed Pay Center
-                //case "Float Pay Center": return "GBLO,USNY";// Value of this column same as Fixed Pay Center
-                //case "Fixed Calc Center": return "GBLO,USNY";// Value of this column same as Fixed Pay Center
-                //case "Float Calc Center": return "GBLO,USNY";// Value of this column same as Fixed Pay Center
-                //case "Reset Center": return "GBLO,USNY";// Value of this column same as Fixed Pay Center
 
                 case "Effective Date Convention": return "NONE";
                 case "Fixed Calc Date Convention":
                 case "Term Date Convention":
                 case "Fixed Pay Date Convention":
+                case "Float Calc Date Convention":
+                case "Float Pay Date Convention":
                     if (isDefault)
                     {
                         return "MODFOLLOW";
@@ -455,10 +468,6 @@ namespace TradeMessageGenerator
                         }
                     }
 
-                //  case "Term Date Convention": return "MODFOLLOW";// Value of this column same as Fixed Calc Date Convention
-                // case "Fixed Pay Date Convention": return "MODFOLLOW";// Value of this column same as Fixed Calc Date Convention
-                case "Float Calc Date Convention":
-                case "Float Pay Date Convention":
                 case "Reset Date Convention":
                     if (isDefault)
                     {

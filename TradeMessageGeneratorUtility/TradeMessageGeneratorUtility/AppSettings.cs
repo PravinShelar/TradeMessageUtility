@@ -11,7 +11,6 @@ namespace TradeMessageGenerator
         public static int NumberOfRecords { get { return Convert.ToInt32(ConfigurationManager.AppSettings["numberOfRecords"]); } }
         public static string KeysToIngnor { get { return ConfigurationManager.AppSettings["keysToIngnor"]; } }
         public static string DirectoryToMonitor { get { return ConfigurationManager.AppSettings["directoryToMonitor"]; } }
-        public static string CssFolderPath { get { return ConfigurationManager.AppSettings["cssFolderPath"]; } }
         
     }
 }

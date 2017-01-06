@@ -15,6 +15,7 @@ namespace TradeMessageGenerator
         public const Char sohValue = '\u0001';
         public const Char keyValuePairSeparator = '=';
         public const Char configValueSeparator = ',';
+        public const string emptyColumnValue = "-";
 
         #endregion
 
@@ -176,7 +177,9 @@ namespace TradeMessageGenerator
                             var tradeValues = UtilityHelper.GetTradeCodeValues();
 
                             outputLines.Add("<html>");
-                            outputLines.Add("<head><style>table { border-collapse: collapse; width: 100%;}");
+                            outputLines.Add("<head><style>");
+                            // outputLines.Add("<head><style>body { font-family: 'Helvetica Neue', Helvetica, Arial, sans - serif;font-size: 14px;");
+                            outputLines.Add("table { border-collapse: collapse; width: 100%;text-align: center;}");
                             outputLines.Add("th { text-align: left; background-color: #f9ea4b; color: #4b4b4b; } ");
                             //th, td {    text-align: left;    padding: 8px;} 
                             outputLines.Add("td { text-align: left; padding: 10px;} ");
@@ -190,6 +193,7 @@ namespace TradeMessageGenerator
                             outputLines.Add("<thead>");
                             outputLines.Add("<tr class='text-center'>");
                             outputLines.Add("<th></th>");
+                            outputLines.Add("<th>Tagname</th>");
                             outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(file)));
                             outputLines.Add(string.Format("<th>{0}</th>", Path.GetFileName(filepath2)));
                             outputLines.Add("</tr>");
@@ -262,8 +266,16 @@ namespace TradeMessageGenerator
                                                     if (!string.Equals(arrOne[i], arrTwo[i]))
                                                     {
                                                         numberOfDifferences++;
-                                                        outputLines.Add("<tr>");
-                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i])));
+                                                        if (numberOfDifferences % 2 == 0)
+                                                        {
+                                                            outputLines.Add("<tr bgcolor='#dddddd'>");
+                                                        }
+                                                        else
+                                                        {
+                                                            outputLines.Add("<tr>");
+                                                        }
+
+                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i]));
                                                         outputLines.Add("</tr>");
                                                     }
                                                 }
@@ -275,8 +287,15 @@ namespace TradeMessageGenerator
                                                     if (i >= arrTwo.Length)
                                                     {
                                                         numberOfDifferences++;
-                                                        outputLines.Add("<tr>");
-                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Empty));
+                                                        if (numberOfDifferences % 2 == 0)
+                                                        {
+                                                            outputLines.Add("<tr bgcolor='#dddddd'>");
+                                                        }
+                                                        else
+                                                        {
+                                                            outputLines.Add("<tr>");
+                                                        }
+                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, arrOne[i], emptyColumnValue));
                                                         outputLines.Add("</tr>");
                                                     }
                                                     else
@@ -284,8 +303,15 @@ namespace TradeMessageGenerator
                                                         if (!string.Equals(arrOne[i], arrTwo[i]))
                                                         {
                                                             numberOfDifferences++;
-                                                            outputLines.Add("<tr>");
-                                                            outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i])));
+                                                            if (numberOfDifferences % 2 == 0)
+                                                            {
+                                                                outputLines.Add("<tr bgcolor='#dddddd'>");
+                                                            }
+                                                            else
+                                                            {
+                                                                outputLines.Add("<tr>");
+                                                            }
+                                                            outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i]));
                                                             outputLines.Add("</tr>");
                                                         }
                                                     }
@@ -299,8 +325,15 @@ namespace TradeMessageGenerator
                                                     if (i >= arrOne.Length)
                                                     {
                                                         numberOfDifferences++;
-                                                        outputLines.Add("<tr>");
-                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Empty, string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i])));
+                                                        if (numberOfDifferences % 2 == 0)
+                                                        {
+                                                            outputLines.Add("<tr bgcolor='#dddddd'>");
+                                                        }
+                                                        else
+                                                        {
+                                                            outputLines.Add("<tr>");
+                                                        }
+                                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, emptyColumnValue, arrTwo[i]));
                                                         outputLines.Add("</tr>");
                                                     }
                                                     else
@@ -308,8 +341,15 @@ namespace TradeMessageGenerator
                                                         if (!string.Equals(arrOne[i], arrTwo[i]))
                                                         {
                                                             numberOfDifferences++;
-                                                            outputLines.Add("<tr>");
-                                                            outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, arrOne[i]), string.Format("{0}: {1}", keyWithAttributeName, arrTwo[i])));
+                                                            if (numberOfDifferences % 2 == 0)
+                                                            {
+                                                                outputLines.Add("<tr bgcolor='#dddddd'>");
+                                                            }
+                                                            else
+                                                            {
+                                                                outputLines.Add("<tr>");
+                                                            }
+                                                            outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, arrOne[i], arrTwo[i]));
                                                             outputLines.Add("</tr>");
                                                         }
                                                     }
@@ -322,8 +362,15 @@ namespace TradeMessageGenerator
                                             if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
                                             {
                                                 numberOfDifferences++;
-                                                outputLines.Add("<tr>");
-                                                outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Format("{0}: {1}", keyWithAttributeName, finalSecondServerFileValues[keytoCheck])));
+                                                if (numberOfDifferences % 2 == 0)
+                                                {
+                                                    outputLines.Add("<tr bgcolor='#dddddd'>");
+                                                }
+                                                else
+                                                {
+                                                    outputLines.Add("<tr>");
+                                                };
+                                                outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]));
                                                 outputLines.Add("</tr>");
                                             }
                                         }
@@ -333,8 +380,15 @@ namespace TradeMessageGenerator
                                     else
                                     {
                                         numberOfDifferences++;
-                                        outputLines.Add("<tr>");
-                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Format("{0}: {1}", keyWithAttributeName, finalFirstServerFileValues[keytoCheck]), string.Empty));
+                                        if (numberOfDifferences % 2 == 0)
+                                        {
+                                            outputLines.Add("<tr bgcolor='#dddddd'>");
+                                        }
+                                        else
+                                        {
+                                            outputLines.Add("<tr>");
+                                        }
+                                        outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], emptyColumnValue));
                                         outputLines.Add("</tr>");
                                     }
                                 }
@@ -355,8 +409,15 @@ namespace TradeMessageGenerator
                                     }
 
                                     numberOfDifferences++;
-                                    outputLines.Add("<tr>");
-                                    outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td>", numberOfDifferences, string.Empty, string.Format("{0}: {1}", r.Key, finalSecondServerFileValues[r.Key])));
+                                    if (numberOfDifferences % 2 == 0)
+                                    {
+                                        outputLines.Add("<tr bgcolor='#dddddd'>");
+                                    }
+                                    else
+                                    {
+                                        outputLines.Add("<tr>");
+                                    }
+                                    outputLines.Add(string.Format("<td class='text-left'>{0}. </td><td class='text-left'>{1}</td><td class='text-left'>{2}</td><td class='text-left'>{3}</td>", numberOfDifferences, keyWithAttributeName, emptyColumnValue, finalSecondServerFileValues[r.Key]));
                                     outputLines.Add("</tr>");
                                 }
                             }

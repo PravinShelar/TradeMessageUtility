@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,10 +10,10 @@ namespace TradeMessageGenerator
 {
     public static class LogMessageComparer
     {
-        public const Char sohValue = '\u0001';
-        public const Char keyValuePairSeparator = '=';
-        public const Char configValueSeparator = ',';
-        public const string emptyColumnValue = "-";
+        public const Char SohValue = '\u0001';
+        public const Char KeyValuePairSeparator = '=';
+        public const Char ConfigValueSeparator = ',';
+        public const string EmptyColumnValue = "-";
 
         public static void CompareLogMessage(string logFileOne, string logFileTwo, string folder, string cssFolderPath)
         {
@@ -23,20 +24,20 @@ namespace TradeMessageGenerator
             var contentsOne = File.ReadAllText(logFileOne);
             if (!string.IsNullOrEmpty(contentsOne))
             {
-                keyValuePairOfFirstFile = contentsOne.Split(sohValue);
+                keyValuePairOfFirstFile = contentsOne.Split(SohValue);
             }
 
             var contentsTwo = File.ReadAllText(logFileTwo);
             if (!string.IsNullOrEmpty(contentsTwo))
             {
-                keyValuePairOfSecondFile = contentsTwo.Split(sohValue);
+                keyValuePairOfSecondFile = contentsTwo.Split(SohValue);
             }
 
             int numberOfDifferences = 0;
             if (keyValuePairOfFirstFile != null && keyValuePairOfSecondFile != null)
             {
 
-                List<string> keysToIgnor = new List<string>(AppSettings.KeysToIngnor.Split(configValueSeparator));
+                List<string> keysToIgnor = new List<string>(AppSettings.KeysToIngnor.Split(ConfigValueSeparator));
                 var tradeValues = UtilityHelper.GetTradeCodeValues();
 
                 getHtmlPageHeader(ref outputLines, cssFolderPath);
@@ -58,8 +59,8 @@ namespace TradeMessageGenerator
                 Dictionary<int, string> finalFirstServerFileValues = new Dictionary<int, string>();
                 for (int i = 1; i < keyValuePairOfFirstFile.Length - 1; i++)
                 {
-                    int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[0].Trim());
-                    string fileOneValue = keyValuePairOfFirstFile[i].Split(keyValuePairSeparator)[1].Trim();
+                    int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(KeyValuePairSeparator)[0].Trim());
+                    string fileOneValue = keyValuePairOfFirstFile[i].Split(KeyValuePairSeparator)[1].Trim();
                     if (!finalFirstServerFileValues.ContainsKey(fileOneKey))
                     {
                         finalFirstServerFileValues.Add(fileOneKey, fileOneValue);
@@ -75,8 +76,8 @@ namespace TradeMessageGenerator
                 Dictionary<int, string> finalSecondServerFileValues = new Dictionary<int, string>();
                 for (int i = 1; i < keyValuePairOfSecondFile.Length - 1; i++)
                 {
-                    int fileOneKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[0].Trim());
-                    string fileOneValue = keyValuePairOfSecondFile[i].Split(keyValuePairSeparator)[1].Trim();
+                    int fileOneKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(KeyValuePairSeparator)[0].Trim());
+                    string fileOneValue = keyValuePairOfSecondFile[i].Split(KeyValuePairSeparator)[1].Trim();
                     if (!finalSecondServerFileValues.ContainsKey(fileOneKey))
                     {
                         finalSecondServerFileValues.Add(fileOneKey, fileOneValue);
@@ -134,7 +135,7 @@ namespace TradeMessageGenerator
                                     {
                                         if (i >= arrTwo.Length)
                                         {
-                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], emptyColumnValue, false, cssFolderPath);
+                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, arrOne[i], EmptyColumnValue, false, cssFolderPath);
                                         }
                                         else
                                         {
@@ -157,7 +158,7 @@ namespace TradeMessageGenerator
                                     {
                                         if (i >= arrOne.Length)
                                         {
-                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, emptyColumnValue, arrTwo[i], false, cssFolderPath);
+                                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, EmptyColumnValue, arrTwo[i], false, cssFolderPath);
                                         }
                                         else
                                         {
@@ -192,7 +193,7 @@ namespace TradeMessageGenerator
                         else
                         {
 
-                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], emptyColumnValue, false, cssFolderPath);
+                            createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, finalFirstServerFileValues[keytoCheck], EmptyColumnValue, false, cssFolderPath);
                         }
                     }
 
@@ -211,7 +212,7 @@ namespace TradeMessageGenerator
                             keyWithAttributeName = r.Key.ToString();
                         }
 
-                        createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, emptyColumnValue, finalSecondServerFileValues[r.Key], false, cssFolderPath);
+                        createTableRow(ref outputLines, ref numberOfDifferences, keyWithAttributeName, EmptyColumnValue, finalSecondServerFileValues[r.Key], false, cssFolderPath);
                     }
                 }
             }
@@ -239,6 +240,205 @@ namespace TradeMessageGenerator
 
         }
 
+        public static DataTable CompareLogMessage(string logFileOne, string logFileTwo, ref int numberOfDifferences)
+        {
+            DataTable table = new DataTable();
+            string[] keyValuePairOfFirstFile = null, keyValuePairOfSecondFile = null;
+            var contentsOne = File.ReadAllText(logFileOne);
+            if (!string.IsNullOrEmpty(contentsOne))
+            {
+                keyValuePairOfFirstFile = contentsOne.Split(SohValue);
+            }
+
+            var contentsTwo = File.ReadAllText(logFileTwo);
+            if (!string.IsNullOrEmpty(contentsTwo))
+            {
+                keyValuePairOfSecondFile = contentsTwo.Split(SohValue);
+            }
+
+            if (keyValuePairOfFirstFile != null && keyValuePairOfSecondFile != null)
+            {
+
+                List<string> keysToIgnor = new List<string>(AppSettings.KeysToIngnor.Split(ConfigValueSeparator));
+                var tradeValues =UtilityHelper.GetTradeCodeValues();
+
+                Dictionary<int, string> finalFirstServerFileValues = new Dictionary<int, string>();
+                for (int i = 1; i < keyValuePairOfFirstFile.Length - 1; i++)
+                {
+                    int fileOneKey = Convert.ToInt32(keyValuePairOfFirstFile[i].Split(KeyValuePairSeparator)[0].Trim());
+                    string fileOneValue = keyValuePairOfFirstFile[i].Split(KeyValuePairSeparator)[1].Trim();
+                    if (!finalFirstServerFileValues.ContainsKey(fileOneKey))
+                    {
+                        finalFirstServerFileValues.Add(fileOneKey, fileOneValue);
+                    }
+                    else
+                    {
+                        string existingValue = finalFirstServerFileValues[fileOneKey];
+                        existingValue += string.Format(",{0}", fileOneValue);
+                        finalFirstServerFileValues[fileOneKey] = existingValue;
+                    }
+                }
+
+                Dictionary<int, string> finalSecondServerFileValues = new Dictionary<int, string>();
+                for (int i = 1; i < keyValuePairOfSecondFile.Length - 1; i++)
+                {
+                    int fileOneKey = Convert.ToInt32(keyValuePairOfSecondFile[i].Split(KeyValuePairSeparator)[0].Trim());
+                    string fileOneValue = keyValuePairOfSecondFile[i].Split(KeyValuePairSeparator)[1].Trim();
+                    if (!finalSecondServerFileValues.ContainsKey(fileOneKey))
+                    {
+                        finalSecondServerFileValues.Add(fileOneKey, fileOneValue);
+                    }
+                    else
+                    {
+                        string existingValue = finalFirstServerFileValues[fileOneKey];
+                        existingValue += string.Format(",{0}", fileOneValue);
+                        finalSecondServerFileValues[fileOneKey] = existingValue;
+                    }
+                }
+
+
+                table.Columns.Add("TagName", typeof(string));
+                table.Columns.Add(logFileOne, typeof(string));
+                table.Columns.Add(logFileTwo, typeof(string));
+                table.Columns.Add("Status", typeof(bool));
+
+                foreach (var item in finalFirstServerFileValues)
+                {
+                    int keytoCheck = item.Key;
+
+                    if (!keysToIgnor.Contains(keytoCheck.ToString()))
+                    {
+                        string keyWithAttributeName = string.Empty;
+                        if (tradeValues.ContainsKey(keytoCheck))
+                        {
+                            keyWithAttributeName = string.Format("({0}) {1}", keytoCheck, tradeValues[keytoCheck]);
+                        }
+                        else
+                        {
+                            keyWithAttributeName = keytoCheck.ToString();
+                        }
+                        if (finalSecondServerFileValues.ContainsKey(keytoCheck))
+                        {
+                            string firstServerFileValue = finalFirstServerFileValues[keytoCheck];
+                            string secondServerFileValue = finalSecondServerFileValues[keytoCheck];
+
+                            var arrOne = firstServerFileValue.Split(',');
+                            var arrTwo = secondServerFileValue.Split(',');
+
+                            if (arrOne.Length > 1 || arrTwo.Length > 1)
+                            {
+                                if (arrOne.Length == arrTwo.Length)
+                                {
+                                    for (int i = 0; i < arrOne.Length; i++)
+                                    {
+                                        if (!string.Equals(arrOne[i], arrTwo[i]))
+                                        {
+                                            table.Rows.Add(keyWithAttributeName, arrOne[i], arrTwo[i], false);
+                                            numberOfDifferences++;
+                                        }
+                                        else
+                                        {
+                                            table.Rows.Add(keyWithAttributeName, arrOne[i], arrTwo[i], true);
+                                        }
+                                    }
+                                }
+                                else if (arrOne.Length > arrTwo.Length)
+                                {
+                                    for (int i = 0; i < arrOne.Length; i++)
+                                    {
+                                        if (i >= arrTwo.Length)
+                                        {
+                                            table.Rows.Add(keyWithAttributeName, arrOne[i], EmptyColumnValue, false);
+                                            numberOfDifferences++;
+                                        }
+                                        else
+                                        {
+                                            if (!string.Equals(arrOne[i], arrTwo[i]))
+                                            {
+
+                                                table.Rows.Add(keyWithAttributeName, arrOne[i], arrTwo[i], false);
+                                                numberOfDifferences++;
+                                            }
+                                            else
+                                            {
+                                                table.Rows.Add(keyWithAttributeName, arrOne[i], arrTwo[i], true);
+                                            }
+                                        }
+                                    }
+
+                                }
+                                else
+                                {
+                                    for (int i = 0; i < arrTwo.Length; i++)
+                                    {
+                                        if (i >= arrOne.Length)
+                                        {
+                                            table.Rows.Add(keyWithAttributeName, EmptyColumnValue, arrTwo[i], false);
+                                            numberOfDifferences++;
+                                        }
+                                        else
+                                        {
+                                            if (!string.Equals(arrOne[i], arrTwo[i]))
+                                            {
+                                                table.Rows.Add(keyWithAttributeName, arrOne[i], arrTwo[i], false);
+                                                numberOfDifferences++;
+                                            }
+                                            else
+                                            {
+                                                table.Rows.Add(keyWithAttributeName, arrOne[i], arrTwo[i], true);
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                if (!string.Equals(finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck]))
+                                {
+
+                                    table.Rows.Add(keyWithAttributeName, finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck], false);
+                                    numberOfDifferences++;
+                                }
+                                else
+                                {
+                                    table.Rows.Add(keyWithAttributeName, finalFirstServerFileValues[keytoCheck], finalSecondServerFileValues[keytoCheck], true);
+                                }
+                            }
+
+                            finalSecondServerFileValues.Remove(keytoCheck);
+                        }
+                        else
+                        {
+
+                            table.Rows.Add(keyWithAttributeName, finalFirstServerFileValues[keytoCheck], EmptyColumnValue, false);
+                            numberOfDifferences++;
+                        }
+                    }
+
+                }
+                foreach (var r in finalSecondServerFileValues)
+                {
+                    if (!keysToIgnor.Contains(r.Key.ToString()))
+                    {
+                        string keyWithAttributeName = string.Empty;
+                        if (tradeValues.ContainsKey(r.Key))
+                        {
+                            keyWithAttributeName = string.Format("({0}) {1}", r.Key, tradeValues[r.Key]);
+                        }
+                        else
+                        {
+                            keyWithAttributeName = r.Key.ToString();
+                        }
+
+                        table.Rows.Add(keyWithAttributeName, EmptyColumnValue, finalSecondServerFileValues[r.Key], false);
+                        numberOfDifferences++;
+                    }
+                }
+            }
+            return table;
+
+        }
         public static void createTerminateHtmlFile(string folder, string outputfileName, string cssFolderPath)
         {
             List<string> outputLines = new List<string>();

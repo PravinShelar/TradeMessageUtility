@@ -42,8 +42,6 @@ namespace TradeMessageGenerator
             //Get name of the columns which needs to be fill at runtime
             columnsBasedOnPeriod = getColumnNames(AppSettings.RuntimeValuesForColumns);
 
-
-
             #region List 1 --> DSWP 3M LIBOR Benchmark trade with Effective date in the past and future
 
             string useCaseHeader = "List 1 --> DSWP 3M LIBOR Benchmark trade with Effective date in the past and future";
@@ -311,7 +309,7 @@ namespace TradeMessageGenerator
                     }
                     else
                     {
-                        return getStubDataByUseCaseNumber(forloopIndex, useCaseNumber, colName);
+                        return getStubDataByUseCaseNumber(forloopIndex,periodInYears, useCaseNumber, colName);
                     }
                 case "Float Stub Date":
                     if (!generateStubData)
@@ -320,7 +318,7 @@ namespace TradeMessageGenerator
                     }
                     else
                     {
-                        return getStubDataByUseCaseNumber(forloopIndex, useCaseNumber, colName);
+                        return getStubDataByUseCaseNumber(forloopIndex, periodInYears, useCaseNumber, colName);
                     }
                 case "Stub Type":
                     if (!generateStubData)
@@ -329,7 +327,7 @@ namespace TradeMessageGenerator
                     }
                     else
                     {
-                        return getStubDataByUseCaseNumber(forloopIndex, useCaseNumber, colName);
+                        return getStubDataByUseCaseNumber(forloopIndex, periodInYears, useCaseNumber, colName);
                     }
                 case "Rolls On":
                     if (!generateRollsOnData)
@@ -371,28 +369,14 @@ namespace TradeMessageGenerator
 
         }
 
-        private string getStubDataByUseCaseNumber(int forloopIndex, int useCaseNumber, string colName)
+        private string getStubDataByUseCaseNumber(int forloopIndex,int periodInYears, int useCaseNumber, string colName)
         {
             switch (colName)
             {
                 case "Fixed Stub Date":
-                    if ((forloopIndex + 1) % 2 == 0)
-                    {
-                        return DateTime.Today.AddMonths((forloopIndex + 1) * (2)).Date.ToString(DateFormat);
-                    }
-                    else
-                    {
-                        return DateTime.Today.AddMonths((forloopIndex + 1) * (3)).Date.ToString(DateFormat);
-                    }
+                    return getStubDate(forloopIndex, periodInYears, 6, useCaseNumber);
                 case "Float Stub Date":
-                    if ((forloopIndex + 1) % 2 == 0)
-                    {
-                        return DateTime.Today.AddMonths((forloopIndex + 1) * (3)).Date.ToString(DateFormat);
-                    }
-                    else
-                    {
-                        return DateTime.Today.AddMonths((forloopIndex + 1) * (4)).Date.ToString(DateFormat);
-                    }
+                    return getStubDate(forloopIndex, periodInYears, 3, useCaseNumber);
                 case "Stub Type":
                     if (useCaseNumber == 4)
                     {
@@ -406,6 +390,65 @@ namespace TradeMessageGenerator
             }
         }
 
+        private string getStubDate(int forloopIndex, int periodInYears, int frequency, int useCaseNumber)
+        {
+            DateTime effectiveDate;
+            if ((forloopIndex + 1) % 2 == 0)
+            {
+                effectiveDate = DateTime.Today.AddDays((forloopIndex + 1) * (-4)).Date;
+            }
+            else
+            {
+                effectiveDate = DateTime.Today.AddDays((forloopIndex + 1) * (7)).Date;
+            }
+
+            DateTime maturityDate;
+            if ((forloopIndex + 1) % 2 == 0)
+            {
+
+                maturityDate = DateTime.Today.AddDays((forloopIndex + 1) * (-4)).Date.AddYears(periodInYears).Date.AddDays((forloopIndex + 1) * (-4));
+            }
+            else
+            {
+
+                maturityDate = DateTime.Today.AddDays((forloopIndex + 1) * (7)).Date.AddYears(periodInYears).Date.AddDays((forloopIndex + 1) * (15));
+            }
+
+            DateTime stubdate = maturityDate;
+            while (stubdate > effectiveDate)
+            {
+                stubdate = stubdate.AddMonths(-frequency);
+            }
+
+            if (useCaseNumber == 4)
+            {
+                stubdate = stubdate.AddMonths(frequency);
+            }
+            else
+            {
+                stubdate = stubdate.AddMonths(frequency * 2);
+            }
+
+
+            if (stubdate.Day != maturityDate.Day)
+            {
+                try
+                {
+                    DateTime d = new DateTime(stubdate.Year, stubdate.Month, maturityDate.Day);
+                    return d.ToShortDateString();
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    return stubdate.ToShortDateString();
+                }
+
+            }
+            else
+            {
+                return stubdate.ToShortDateString();
+            }
+
+        }
         private string getValueByColumnName(string colName, bool isDefault)
         {
             switch (colName)

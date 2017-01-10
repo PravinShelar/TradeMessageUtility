@@ -1,0 +1,67 @@
+﻿bool cont = true;
+            while (cont)
+            {
+                Console.WriteLine("Enter Effective Date (mm/dd/yyyy) : ");
+                string y1 = Console.ReadLine();
+var arr = y1.Split('/');
+
+DateTime effectiveDate = new DateTime(Convert.ToInt32(arr[2]), Convert.ToInt32(arr[0]), Convert.ToInt32(arr[1]));
+Console.WriteLine("-----------------------");
+
+                Console.WriteLine("Enter Maturity Date (mm/dd/yyyy) : ");
+                string y2 = Console.ReadLine();
+var arr1 = y2.Split('/');
+DateTime maturityDate = new DateTime(Convert.ToInt32(arr1[2]), Convert.ToInt32(arr1[0]), Convert.ToInt32(arr1[1]));
+Console.WriteLine("-----------------------");
+                Console.WriteLine("Enter Frequency");
+                string f = Console.ReadLine();
+int freq = Convert.ToInt32(f);
+
+Console.WriteLine("-----------------------");
+
+                Console.WriteLine("Stub Date:");
+
+                // Difference in days, hours, and minutes.
+                TimeSpan ts = maturityDate - effectiveDate;
+// Difference in days.
+int differenceInDays = ts.Days;
+
+DateTime stubdate = maturityDate;
+                while (stubdate > effectiveDate)
+                {
+                    stubdate = stubdate.AddMonths(-freq);
+                }
+                stubdate = stubdate.AddMonths(freq);
+                if (stubdate.Day != maturityDate.Day)
+                {
+                    try
+                    {
+                        DateTime d = new DateTime(stubdate.Year, stubdate.Month, maturityDate.Day);
+Console.WriteLine(d.ToShortDateString());
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        Console.WriteLine(stubdate.ToShortDateString());
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine(stubdate.ToShortDateString());
+                }
+
+                Console.WriteLine("-----------------------");
+
+                Console.WriteLine("Do you want to exit (y/n)");
+                string res = Console.ReadLine();
+                if (res.ToLower() == "y")
+                {
+                    cont = false;
+                }
+                else
+                {
+                    cont = true;
+                }
+            }
+
+            Console.ReadLine();
